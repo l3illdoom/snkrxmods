@@ -77,11 +77,11 @@ function Laser:init_player(player)
                     end, 'laser_lock_' .. acquired.id)
                 end
             end
-        end, nil, nil, 'attack'
+        end, nil, nil, 'laser_seek'
     )
     player.t:every(player.laser_requires_los and 0.15 or 0.25, function()
         for _, acquired in ipairs(player.laser_targets) do
-            if acquired.dead
+            if player.dead or acquired.dead
                 or math.distance(player.x, player.y, acquired.x, acquired.y) > player.max_laser_range
                 or (player.laser_requires_los and self:laserLosBlocked(player, acquired))
             then
@@ -90,7 +90,16 @@ function Laser:init_player(player)
                 player.t:cancel('laser_lock_'..acquired.id)
             end
         end
-    end, nil, nil, nil)
+    end, nil, nil, 'laser_cancel')
+end
+
+function Laser:disableLaser(player)
+    player.t:cancel('laser_seek')
+    player.t:cancel('laser_cancel')
+    for _, target in ipairs(player.laser_targets or {}) do
+        self:lost_target(player, target)
+    end
+    player.laser_targets = nil
 end
 
 function Laser:laserLosBlocked(player, target)
@@ -137,7 +146,7 @@ end
 function LaserClass:update(unit, dt)
     if not unit.laser_count_check then
         unit.laser_count_check = true
-        if table.contains(unit.classes, self.key) then
+        if table.contains(unit.classes, self.key) and unit.max_targets then
             local lvl = main.current.laser_level
             unit.max_targets = unit.max_targets + (lvl == 2 and 2 or lvl == 1 and 1 or 0)
             unit.max_targets_add = unit.max_targets_add + (lvl == 2 and 1 or 0)

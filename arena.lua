@@ -8,6 +8,8 @@ end
 
 
 function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp, lock)
+  extraUnitsOnArenaEnter(level, loop, units, passives, shop_level, shop_xp, lock)
+
   self.hfx:add('condition1', 1)
   self.hfx:add('condition2', 1)
   self.level = level or 1

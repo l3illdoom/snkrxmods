@@ -260,6 +260,29 @@ function extraUnitsUpdate(unit, dt)
     end
 end
 
+function extraUnitsOnArenaEnter(level, loop, units, passives, shop_level, shop_xp, lock)
+    local args = {
+        level = level,
+        units = units,
+        loop = loop,
+        passives = passives,
+        shop_level = shop_level,
+        shop_xp = shop_xp,
+        lock = lock
+    }
+    for _, class in pairs(EXTRA_CLASSES) do
+        if class.onArenaEnter then
+            class:onArenaEnter(args)
+        end
+    end
+
+    for _, unit in pairs(EXTRA_UNITS) do
+        if unit.onArenaEnter then
+            unit:onArenaEnter(args)
+        end
+    end
+end
+
 -- require each unit you want included
 require 'extras/MonumentBuilder'
 require 'extras/Vampire'
@@ -267,3 +290,4 @@ require 'extras/Vampire'
 require 'extras/DotLaser'
 require 'extras/Sniper'
 require 'extras/RimeSeer'
+require 'extras/PsykerLaser'

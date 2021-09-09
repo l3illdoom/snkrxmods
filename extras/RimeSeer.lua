@@ -68,7 +68,7 @@ function RimeSeer:lost_target(unit, target)
         end
     end
     if (target and target.cancel_dot) then
-        target:cancel_dot('rime_seer')
+        target:remove_dot('rime_seer')
     end
 end
 
