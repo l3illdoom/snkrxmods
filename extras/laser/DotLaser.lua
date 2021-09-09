@@ -1,4 +1,4 @@
-require('extras/Laser')
+require('extras/laser/Laser')
 
 DotLaser =  Laser:extend()
 

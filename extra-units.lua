@@ -1,7 +1,8 @@
+MAX_CLASSES_PER_RUN = 11 -- set this to how many classes you want (ignoring explorer, that's always added).
+
 EXTRA_UNITS = { } -- map created during init_unit
 EXTRA_CLASSES = {} -- map created during init_class
-
-MAX_CLASSES_PER_RUN = 11 -- set this to how many classes you want (ignoring explorer, that's always added).
+EXTRA_PASSIVES = {} -- map created during init_passive
 
 CLASS_COLOR_STRINGS = {
     ['warrior'] = 'yellow',
@@ -169,10 +170,12 @@ function init_unit_pools(class_pool)
         get_class_string(table.select(missing_classes, function(_, index) return index % 2 == 0 end)),
     }
 
-    missing_class_pool_strings[1] = 'No: ' .. missing_class_pool_strings[1]
+    if #missing_class_pool_strings[1] > 0 then
+        missing_class_pool_strings[1] = 'No: ' .. missing_class_pool_strings[1]
+    end
 
     print('classes this run: ' .. table.tostring(run_class_pool))
-    print(missing_class_pool_string)
+    print(table.tostring(missing_class_pool_strings))
 
     run_tier_to_characters = {
         [1] = table.select(tier_to_characters[1], filterTierToClasses),
@@ -222,7 +225,7 @@ function removeClassPassives(passive_pool, missing_classes)
     --end)
 end
 
-function display_class_stats()
+function get_counts_by_class()
     local unit_count_by_class_count = {
     }
 
@@ -235,7 +238,10 @@ function display_class_stats()
             counts[#classes] = (counts[#classes] or 1) + 1
         end
     end
-    print(table.tostring(unit_count_by_class_count))
+end
+
+function display_class_stats()
+    print(table.tostring(get_counts_by_class()))
 end
 
 function extraUnitsShoot(unit, crit, dmg_m, r, mods)
@@ -270,6 +276,12 @@ function extraUnitsOnArenaEnter(level, loop, units, passives, shop_level, shop_x
         shop_xp = shop_xp,
         lock = lock
     }
+    for _, passive in pairs(EXTRA_PASSIVES) do
+        if passive.onArenaEnter then
+            passive:onArenaEnter(args)
+        end
+    end
+
     for _, class in pairs(EXTRA_CLASSES) do
         if class.onArenaEnter then
             class:onArenaEnter(args)
@@ -283,12 +295,30 @@ function extraUnitsOnArenaEnter(level, loop, units, passives, shop_level, shop_x
     end
 end
 
+function getFreshPassivePool()
+    local entirePool = { -- default game passives
+        'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
+        'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
+        'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
+        'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
+        'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
+        'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
+        'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
+    }
+
+    for k, _ in pairs(EXTRA_PASSIVES) do
+        table.push(entirePool, k)
+    end
+
+    return entirePool
+end
+
 -- require each unit you want included
 require 'extras/MonumentBuilder'
 require 'extras/Vampire'
 
-require 'extras/DotLaser'
-require 'extras/Sniper'
-require 'extras/RimeSeer'
-require 'extras/PsykerLaser'
-require 'extras/ForcerLaser'
+require 'extras/laser/DotLaser'
+require 'extras/laser/Sniper'
+require 'extras/laser/RimeSeer'
+require 'extras/laser/PsykerLaser'
+require 'extras/laser/ForcerLaser'

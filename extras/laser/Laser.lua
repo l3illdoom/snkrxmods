@@ -18,6 +18,12 @@ function LaserClass:init(args)
         },
     })
     laser = Image('laser')
+
+    self.max_targets = BuffGroup{}
+    self.max_targets_add = BuffGroup{}
+    self.laser_acquire_range = BuffGroup{}
+    self.max_laser_range = BuffGroup{}
+    self.laser_acquire_frequency = BuffGroup{}
 end
 
 function LaserClass:description(lvl)
@@ -33,24 +39,36 @@ Laser = Object:extend()
 Laser:implement(ExtraUnit)
 
 function Laser:init_player(player)
-    local callOrDefault = function(field, default)
+    local callOrDefault = function(fieldName, default)
+        local field = self[fieldName]
+        local preBuff
         if type(field) == "number" or type(field) == "table" then
-            return field
+            preBuff = field
         elseif field then
-            return field(player)
+            preBuff = field(player)
         else
-            return default
+            preBuff = default
+        end
+        local buff = LASER_CLASS[fieldName]
+        if buff then
+            local postBuff = buff:getStat(preBuff)
+            if preBuff ~= postBuff then
+                print('buffed ' .. fieldName .. ' from ' .. preBuff .. ' to ' .. postBuff)
+            end
+            return postBuff
+        else
+            return preBuff
         end
     end
 
     player.laser_targets = {}
-    player.max_targets = callOrDefault(self.max_targets, 1)
-    player.max_targets_add = callOrDefault(self.max_targets_add, 1)
-    player.laser_acquire_range = callOrDefault(self.laser_acquire_range, 140)
-    player.max_laser_range = callOrDefault(self.max_laser_range, 200)
-    player.laser_acquire_frequency = callOrDefault(self.laser_acquire_frequency, 4)
+    player.max_targets = callOrDefault('max_targets', 1)
+    player.max_targets_add = callOrDefault('max_targets_add', 1)
+    player.laser_acquire_range = callOrDefault('laser_acquire_range', 140)
+    player.max_laser_range = callOrDefault('max_laser_range', 200)
+    player.laser_acquire_frequency = callOrDefault('laser_acquire_frequency', 4)
     player.laser_color = self.laser_color(player)
-    player.max_laser_lock = callOrDefault(self.max_laser_lock, player.laser_acquire_frequency * 1.25)
+    player.max_laser_lock = callOrDefault('max_laser_lock', player.laser_acquire_frequency * 1.25)
     player.laser_requires_los = self.laser_requires_los or false
 
     player.attack_sensor = Circle(player.x, player.y, player.laser_acquire_range)
@@ -77,7 +95,7 @@ function Laser:init_player(player)
                     end, 'laser_lock_' .. acquired.id)
                 end
             end
-        end, nil, nil, 'laser_seek'
+        end, nil, nil, 'shoot'
     )
     player.t:every(player.laser_requires_los and 0.15 or 0.25, function()
         for _, acquired in ipairs(player.laser_targets) do
@@ -94,7 +112,7 @@ function Laser:init_player(player)
 end
 
 function Laser:disableLaser(player)
-    player.t:cancel('laser_seek')
+    player.t:cancel('shoot')
     player.t:cancel('laser_cancel')
     for _, target in ipairs(player.laser_targets or {}) do
         self:lost_target(player, target)
@@ -156,4 +174,6 @@ function LaserClass:update(unit, dt)
     end
 end
 
-LaserClass{}
+LASER_CLASS = LaserClass{}
+
+require 'extras/laser/Telescope'

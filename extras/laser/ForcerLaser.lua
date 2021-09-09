@@ -1,4 +1,4 @@
-require('extras/Laser')
+require('extras/laser/Laser')
 
 ForcerLaser = Laser:extend()
 ForcerLaser.key = 'telekinetic'

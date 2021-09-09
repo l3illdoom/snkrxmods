@@ -29,6 +29,9 @@ end
 function BuffGroup:clearAdd(tag)
   self.adds[tag] = nil
 end
+function BuffGroup:getStat(original)
+  return (original + self:getAdd()) * self:getMod()
+end
 
 Player = Object:extend()
 Player:implement(GameObject)

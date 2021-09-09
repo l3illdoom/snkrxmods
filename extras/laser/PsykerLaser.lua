@@ -1,4 +1,4 @@
-require('extras/Laser')
+require('extras/laser/Laser')
 require('extras/extensions')
 
 PsykerLaser = Object:extend()
@@ -68,7 +68,7 @@ OrbLaser = Laser:extend()
 function OrbLaser:init()
     self.max_targets = 1
     self.laser_acquire_range = function() return 45 * (Projectile.add_psyker_laser.level == 3 and 1.3 or 1) end
-    self.laser_acquire_frequency = 1
+    self.laser_acquire_frequency = 0.5
     self.max_laser_range = function(player) return player.laser_acquire_range * 1.1 end
     self.laser_color = function() return fg_transparent_week end
 end
