@@ -1315,7 +1315,7 @@ function Player:update(dt)
   if table.any(self.classes, function(v) return v == 'rogue' end) then
     if main.current.rogue_level == 2 then self.chance_to_crit = 30
     elseif main.current.rogue_level == 1 then self.chance_to_crit = 15
-    elseif main.current.rogue_level == 0 then self.chance_to_crit = 0 end
+    elseif main.current.rogue_level == 0 then self.chance_to_crit = 5 end
   end
 
   if main.current.enchanter_level == 2 then self.enchanter_dmg_m = 1.25
