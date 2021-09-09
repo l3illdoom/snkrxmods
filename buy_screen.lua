@@ -970,10 +970,12 @@ function RerollButton:init(args)
   if self.parent:is(BuyScreen) then
     self.reroll_cost = 2
     local merchant
-    for _, unit in ipairs(self.units) do
-      if unit.character == 'merchant' then
-        merchant = unit
-        break
+    if self.parent.units then
+      for _, unit in ipairs(self.parent.units) do
+        if unit.character == 'merchant' then
+          merchant = unit
+          break
+        end
       end
     end
     if merchant and merchant.level == 3 then
@@ -1073,7 +1075,7 @@ function RerollButton:on_mouse_enter()
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self.selected = true
   if self.parent:is(BuyScreen) then
-    self.text:set_text{{text = '[fgm5]reroll: 2', font = pixul_font, alignment = 'center'}}
+    self.text:set_text{{text = '[fgm5]reroll: ' .. self.reroll_cost, font = pixul_font, alignment = 'center'}}
   elseif self.parent:is(Arena) then
     if self.free_reroll then
       self.text:set_text{{text = '[fgm5]reroll: 0', font = pixul_font, alignment = 'center'}}
@@ -1087,7 +1089,7 @@ end
 
 function RerollButton:on_mouse_exit()
   if self.parent:is(BuyScreen) then
-    self.text:set_text{{text = '[bg10]reroll: [yellow]2', font = pixul_font, alignment = 'center'}}
+    self.text:set_text{{text = '[bg10]reroll: [yellow]' .. self.reroll_cost, font = pixul_font, alignment = 'center'}}
   elseif self.parent:is(Arena) then
     if self.free_reroll then
       self.text:set_text{{text = '[fgm5]reroll: [yellow]0', font = pixul_font, alignment = 'center'}}

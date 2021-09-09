@@ -961,12 +961,12 @@ function Arena:gain_gold()
   local merchant
   for _, unit in ipairs(self.starting_units) do
     if unit.character == 'merchant' then
-      merchant = true
+      merchant = unit
       break
     end
   end
   self.gold_gained = random:int(level_to_gold_gained[self.level][1], level_to_gold_gained[self.level][2])
-  self.interest = math.min(math.floor(gold/5), 5) + math.min((merchant and math.floor(gold/10) or 0), 10)
+  self.interest = math.min(math.floor(gold/5), 5) + math.min((merchant and math.floor(gold/10) or 0), 5 * (merchant and merchant.level or 1))
   gold = gold + self.gold_gained + self.gold_picked_up + self.interest
 end
 

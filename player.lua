@@ -138,7 +138,7 @@ function Player:init(args)
     end, nil, nil, 'shoot')
 
   elseif self.character == 'vampire' then
-    self.attack_sensor = Circle(self.x, self.y, 40)
+    self.attack_sensor = Circle(self.x, self.y, 45)
     self.t:cooldown(3, function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
       if closest_enemy then
@@ -1495,6 +1495,10 @@ function Player:draw()
     if self.fairyd then
       graphics.rectangle(self.x, self.y, 1.25*self.shape.w, 1.25*self.shape.h, 3, 3, blue_transparent)
     end
+
+    if self.vampired then
+      graphics.rectangle(self.x, self.y, 1.33*self.shape.w, 1.33*self.shape.h, 3, 3, red_transparent)
+    end
   end
   graphics.pop()
 end
@@ -1850,6 +1854,10 @@ function Player:shoot(r, mods)
       dmg_m = dmg_m*10
       main.current.gold_picked_up = main.current.gold_picked_up + 1
     end
+  end
+
+  if self.character == 'vampire' then
+    dmg_m = dmg_m*2
   end
 
   if crit and mods.spawn_critters_on_crit then
@@ -2491,7 +2499,10 @@ function Projectile:on_trigger_enter(other, contact)
       local units = self.parent:get_all_units()
       for _, unit in ipairs(units) do
         unit.vampire_dmg_m = unit.vampire_dmg_m + 0.2
+        unit.vampired = true
+        unit.t:after(2, function() unit.vampired = false end)
       end
+      buff1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
     end
   end
 end

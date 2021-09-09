@@ -513,7 +513,7 @@ function init()
     ['usurer'] = {'curser', 'mercenary', 'voider'},
     ['gambler'] = {'mercenary', 'sorcerer'},
     ['thief'] = {'rogue', 'mercenary'},
-    ['vampire'] = {'rogue', 'healer'},
+    ['vampire'] = {'rogue', 'healer', 'enchanter'},
   }
 
   character_class_strings = {
@@ -574,7 +574,7 @@ function init()
     ['usurer'] = '[purple]Curser, [yellow2]Mercenary, [purple]Voider',
     ['gambler'] = '[yellow2]Mercenary, [blue2]Sorcerer',
     ['thief'] = '[red]Rogue, [yellow2]Mercenary',
-    ['vampire'] = '[red]Rogue, [green]Healer'
+    ['vampire'] = '[red]Rogue, [green]Healer, [blue]Enchanter'
   }
 
   get_character_stat_string = function(character, level)
@@ -648,11 +648,11 @@ function init()
     ['warden'] = function(lvl) return '[fg]creates a force field around a random unit that prevents enemies from entering' end,
     ['psychic'] = function(lvl) return '[fg]creates a small area that deals [yellow]' .. get_character_stat('psychic', lvl, 'dmg') .. ' AoE[fg] damage' end,
     ['miner'] = function(lvl) return '[fg]picking up gold releases [yellow]4[fg] homing projectiles that each deal [yellow]' .. get_character_stat('miner', lvl, 'dmg') .. ' [fg]damage' end,
-    ['merchant'] = function(lvl) return '[fg]gain [yellow]+1[fg] interest for every [yellow]10[fg] gold, up to a max of [yellow]+10[fg] from the merchant' end,
+    ['merchant'] = function(lvl) return '[fg]gain [yellow]+1[fg] interest for every [yellow]10[fg] gold, up to a max of [yellow]+5/level[fg] from the merchant' end,
     ['usurer'] = function(lvl) return '[fg]curses [yellow]3[fg] nearby enemies indefinitely with debt, dealing [yellow]' .. get_character_stat('usurer', lvl, 'dmg') .. '[fg] damage per second' end,
     ['gambler'] = function(lvl) return '[fg]deal [yellow]2X[fg] damage to a single random enemy where X is how much gold you have' end,
     ['thief'] = function(lvl) return '[fg]throws a knife that deals [yellow]' .. 2*get_character_stat('thief', lvl, 'dmg') .. '[fg] damage and chains [yellow]5[fg] times' end,
-    ['vampire'] = function(lvl) return '[fg]throws a short-range knife that deals [yellow]' .. get_character_stat('vampire', lvl, 'dmg') .. '[fg] damage and creates a healing orb on hit' end,
+    ['vampire'] = function(lvl) return '[fg]throws a short-range knife that deals [yellow]' .. 2*get_character_stat('vampire', lvl, 'dmg') .. '[fg] damage and creates a healing orb on hit' end,
   }
 
   character_effect_names = {
@@ -831,7 +831,7 @@ function init()
     ['warden'] = function() return '[fg]creates the force field around [yellow]2[fg] units' end,
     ['psychic'] = function() return '[fg]the attack can happen from any distance and repeats once' end,
     ['miner'] = function() return '[fg]release [yellow]8[fg] homing projectiles instead and they pierce twice' end,
-    ['merchant'] = function() return '[fg]your first item reroll is always free' end,
+    ['merchant'] = function() return '[fg]your first item reroll is always free, shop rerolls cost 1' end,
     ['usurer'] = function() return '[fg]if the same enemy is cursed [yellow]3[fg] times it takes [yellow]' .. 10*get_character_stat('usurer', 3, 'dmg') .. '[fg] damage' end,
     ['gambler'] = function() return '[yellow]60/40/20%[fg] chance to cast the attack [yellow]2/3/4[fg] times' end,
     ['thief'] = function() return '[fg]if the knife crits it deals [yellow]' .. 10*get_character_stat('thief', 3, 'dmg') .. '[fg] damage, chains [yellow]10[fg] times and grants [yellow]1[fg] gold' end,
@@ -896,7 +896,7 @@ function init()
     ['usurer'] = function() return '[light_bg]if the same enemy is cursed 3 times it takes ' .. 10*get_character_stat('usurer', 3, 'dmg') .. ' damage' end,
     ['gambler'] = function() return '[light_bg]60/40/20% chance to cast the attack 2/3/4 times' end,
     ['thief'] = function() return '[light_bg]if the knife crits it deals ' .. 10*get_character_stat('thief', 3, 'dmg') .. ' damage, chains 10 times and grants 1 gold' end,
-    ['vampire'] = function() return '[light_bg]if the knife crits the vampire deals 20% more damage until end of combat' end,
+    ['vampire'] = function() return '[light_bg]if the knife crits your team deals 20% more damage until end of combat' end,
   }
 
   character_stats = {
