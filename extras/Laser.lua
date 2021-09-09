@@ -1,6 +1,35 @@
+LaserClass = Object:extend()
+LaserClass:implement(ExtraClass)
 
+function LaserClass:init(args)
+    self:init_class({
+        key = 'laser',
+        color = function() return white[0] end,
+        color_string = 'fg',
+        levels = {2, 4},
+        stats = {
+            hp = 1,
+            dmg = 1.2,
+            aspd = 1.1,
+            area_dmg = 1,
+            area_size = 1,
+            def = 0.85,
+            mvspd = 1.2
+        },
+    })
+    laser = Image('laser')
+end
 
-Laser =  Object:extend()
+function LaserClass:description(lvl)
+    return self:formatDescription(
+        lvl,
+        "[lvl1]2[light_bg]/[lvl2]4 [fg]- " ..
+        "+[lvl1]1[light_bg]/[lvl2]2 [fg] max targets and " ..
+        "+[lvl1]0[light_bg]/[lvl2]1 [fg] targets at once"
+    )
+end
+
+Laser = Object:extend()
 Laser:implement(ExtraUnit)
 
 function Laser:init_player(player)

@@ -263,21 +263,9 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   for _, f in ipairs(self.player.followers) do table.insert(units, f) end
 
   local class_levels = get_class_levels(units)
-  self.ranger_level = class_levels.ranger
-  self.warrior_level = class_levels.warrior
-  self.mage_level = class_levels.mage
-  self.rogue_level = class_levels.rogue
-  self.nuker_level = class_levels.nuker
-  self.curser_level = class_levels.curser
-  self.forcer_level = class_levels.forcer
-  self.swarmer_level = class_levels.swarmer
-  self.voider_level = class_levels.voider
-  self.enchanter_level = class_levels.enchanter
-  self.healer_level = class_levels.healer
-  self.psyker_level = class_levels.psyker
-  self.conjurer_level = class_levels.conjurer
-  self.sorcerer_level = class_levels.sorcerer
-  self.mercenary_level = class_levels.mercenary
+  for k, v in pairs(class_levels) do
+    self[k .. '_level'] = v
+  end
 
   self.t:every(0.375, function()
     local p = random:table(star_positions)

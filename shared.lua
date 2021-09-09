@@ -883,7 +883,8 @@ function string:gray()
 end
 
 function string:titleCase()
-  return (self:gsub("(%a)([%w_']*)",
+  local underscoreReplaced = (self:gsub("%_", " "))
+  return (underscoreReplaced:gsub("(%a)([%w_']*)",
           function(first, rest)
             return first:upper() .. rest
           end

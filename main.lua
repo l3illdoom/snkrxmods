@@ -1099,6 +1099,10 @@ function init()
   get_number_of_units_per_class = function(units)
     local counts  = {}
 
+    for _, k in pairs(ALL_CLASSES) do
+      counts[k] = 0
+    end
+
     for _, unit in ipairs(units) do
       for _, unit_class in ipairs(character_classes[unit.character]) do
         counts[unit_class] = (counts[unit_class] or 0) + 1
@@ -1133,27 +1137,34 @@ function init()
 
   class_set_numbers = {}
   for i, k in ipairs(ALL_CLASSES) do
-    class_set_numbers[k] = function(units) return UNITS_PER_CLASS_LEVEL[1], UNITS_PER_CLASS_LEVEL[2], UNITS_PER_CLASS_LEVEL[3], get_number_of_units_per_class(units)[k] end
+    class_set_numbers[k] = function(units) return UNITS_PER_CLASS_LEVEL[k][1], UNITS_PER_CLASS_LEVEL[k][2], UNITS_PER_CLASS_LEVEL[k][3], get_number_of_units_per_class(units)[k] end
   end
 
-  class_set_numbers = {
-    ['ranger'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).ranger end,
-    ['warrior'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).warrior end,
-    ['mage'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).mage end,
-    ['nuker'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).nuker end,
-    ['rogue'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).rogue end,
-    ['healer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).healer end,
-    ['conjurer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).conjurer end,
-    ['enchanter'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).enchanter end,
-    ['psyker'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).psyker end,
-    ['curser'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).curser end,
-    ['forcer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).forcer end,
-    ['swarmer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).swarmer end,
-    ['voider'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).voider end,
-    ['sorcerer'] = function(units) return 2, 4, 6, get_number_of_units_per_class(units).sorcerer end,
-    ['mercenary'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).mercenary end,
-    ['explorer'] = function(units) return 1, 1, nil, get_number_of_units_per_class(units).explorer end,
+  passives_by_class = {
+    ['ranger'] = {'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow'},
+    ['warrior'] = {'berserking', 'unwavering_stance', 'unrelenting_stance'},
+    ['mage'] = {'chronomancy', 'awakening', 'divine_punishment'},
+    ['nuker'] = {'magnify', 'unleash'},
+    ['rogue'] = {'assassination', 'flying_daggers', 'ultimatum'},
+    ['healer'] = {'magnetism', 'blessing', 'haste', 'divine_barrage'},
+    ['conjurer'] = {'rearm', 'taunt', 'construct_instability'},
+    ['enchanter'] = {'reinforce', 'payback', 'enchanted'},
+    ['psyker'] = {'orbitism', 'psyker_orbs', 'psychosense', 'psychosink'},
+    ['curser'] = {'malediction', 'hextouch', 'whispers_of_doom'},
+    ['forcer'] = {'tremor', 'heavy_impact', 'fracture'},
+    ['swarmer'] = {'meat_shield', 'hive', 'baneling_burst'},
+    ['voider'] = {'call_of_the_void', 'seeping', 'deceleration', 'annihilation'},
+    ['sorcerer'] = {'freezing_field', 'burning_field', 'gravity_field'},
+    ['mercenary'] = {'magnetism', 'insurance', 'dividends'},
+    ['explorer'] = {},
   }
+
+  for class_name, class in pairs(EXTRA_CLASSES) do
+    class_descriptions[class_name] = function(lvl) return class:description(lvl) end
+    class_stat_multipliers[class_name] = class.stats
+    class_colors[class_name] = class.color()
+    passives_by_class[class_name] = {}
+  end
 
   passive_names = {
     ['centipede'] = 'Centipede',
@@ -1240,25 +1251,6 @@ function init()
     ['psycholeak'] = 'Psycholeak',
     ['divine_blessing'] = 'Divine Blessing',
     ['hardening'] = 'Hardening',
-  }
-
-  passives_by_class = {
-    ['ranger'] = {'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow'},
-    ['warrior'] = {'berserking', 'unwavering_stance', 'unrelenting_stance'},
-    ['mage'] = {'chronomancy', 'awakening', 'divine_punishment'},
-    ['nuker'] = {'magnify', 'unleash'},
-    ['rogue'] = {'assassination', 'flying_daggers', 'ultimatum'},
-    ['healer'] = {'magnetism', 'blessing', 'haste', 'divine_barrage'},
-    ['conjurer'] = {'rearm', 'taunt', 'construct_instability'},
-    ['enchanter'] = {'reinforce', 'payback', 'enchanted'},
-    ['psyker'] = {'orbitism', 'psyker_orbs', 'psychosense', 'psychosink'},
-    ['curser'] = {'malediction', 'hextouch', 'whispers_of_doom'},
-    ['forcer'] = {'tremor', 'heavy_impact', 'fracture'},
-    ['swarmer'] = {'meat_shield', 'hive', 'baneling_burst'},
-    ['voider'] = {'call_of_the_void', 'seeping', 'deceleration', 'annihilation'},
-    ['sorcerer'] = {'freezing_field', 'burning_field', 'gravity_field'},
-    ['mercenary'] = {'magnetism', 'insurance', 'dividends'},
-    ['explorer'] = {},
   }
 
   passive_descriptions = {

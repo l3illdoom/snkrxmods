@@ -264,7 +264,7 @@ function BuyScreen:draw()
   if self.shop_text then self.shop_text:draw(64, 20) end
   if self.sets_text then self.sets_text:draw(328, 20) end
   if self.party_text then self.party_text:draw(440, 20) end
-  if self.missing_classes_text then self.missing_classes_text:draw(80, gh - 14) end
+  if self.missing_classes_text then self.missing_classes_text:draw(100, gh - 14) end
   if current_new_game_plus > 0 then self.ng_text:draw(265, gh - 40) end
 
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
@@ -1142,7 +1142,7 @@ function TutorialCharacterPart:on_mouse_enter()
   self.spring:pull(0.2, 200, 10)
   self.info_text = InfoText{group = main.current.tutorial}
   self.info_text:activate({
-    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - [yellow]Lv.' .. self.level,
+    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:titleCase() .. '[fg] - [yellow]Lv.' .. self.level,
     font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = character_descriptions[self.character](self.level), font = pixul_font, alignment = 'center', height_multiplier = 2},
@@ -1286,7 +1286,7 @@ function CharacterPart:on_mouse_enter()
   self.spring:pull(0.2, 200, 10)
   self.info_text = InfoText{group = main.current.ui, force_update = self.force_update}
   self.info_text:activate({
-    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - [yellow]Lv.' .. self.level .. '[fg], tier [yellow]' .. character_tiers[self.character] .. '[fg] - sells for [yellow]' ..
+    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:titleCase() .. '[fg] - [yellow]Lv.' .. self.level .. '[fg], tier [yellow]' .. character_tiers[self.character] .. '[fg] - sells for [yellow]' ..
       self:get_sale_price(), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = character_descriptions[self.character](self.level), font = pixul_font, alignment = 'center', height_multiplier = 2},
@@ -1784,7 +1784,7 @@ function CharacterIcon:on_mouse_enter()
   self.spring:pull(0.2, 200, 10)
   self.info_text = InfoText{group = main.current.ui}
   self.info_text:activate({
-    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - cost: [yellow]' .. self.parent.cost, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:titleCase() .. '[fg] - cost: [yellow]' .. self.parent.cost, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = character_descriptions[self.character](1), font = pixul_font, alignment = 'center', height_multiplier = 2},
     {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
@@ -1878,7 +1878,7 @@ function TutorialClassIcon:on_mouse_enter()
   local i, j, k, owned = class_set_numbers[self.class](self.units)
   self.info_text = InfoText{group = main.current.tutorial}
   self.info_text:activate({
-    {text = '[' .. class_color_strings[self.class] .. ']' .. self.class:capitalize() .. '[fg] - owned: [yellow]' .. owned, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+    {text = '[' .. class_color_strings[self.class] .. ']' .. self.class:titleCase() .. '[fg] - owned: [yellow]' .. owned, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = class_descriptions[self.class]((owned >= j and 2) or (owned >= i and 1) or 0), font = pixul_font, alignment = 'center'},
   }, nil, nil, nil, nil, 16, 4, nil, 2)
   self.info_text.x, self.info_text.y = gw/2 - 25, gh/2 + 25
@@ -2038,7 +2038,7 @@ function ClassIcon:on_mouse_enter()
   local i, j, k, owned = class_set_numbers[self.class](self.units)
   self.info_text = InfoText{group = main.current.ui}
   self.info_text:activate({
-    {text = '[' .. class_color_strings[self.class] .. ']' .. (self.class == 'conjurer' and 'Builder' or self.class:capitalize()) .. '[fg] - owned: [yellow]' .. owned, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+    {text = '[' .. class_color_strings[self.class] .. ']' .. (self.class == 'conjurer' and 'Builder' or self.class:titleCase()) .. '[fg] - owned: [yellow]' .. owned, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = class_descriptions[self.class]((k and (owned >= k and 3)) or (owned >= j and 2) or (owned >= i and 1) or 0), font = pixul_font, alignment = 'center'},
   }, nil, nil, nil, nil, 16, 4, nil, 2)
   self.info_text.x, self.info_text.y = gw/2, gh/2 + 10

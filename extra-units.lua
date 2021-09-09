@@ -69,12 +69,21 @@ function ExtraClass:init_class(args)
         color: a color object
         color_string: a color in string form
         levels: a table of how many units you need for each level
-
+        stats: a table of the stat multipliers
+        description: a function that given a lvl will display a formatted string
     --]]
 
     EXTRA_CLASSES[self.key] = self
     table.insert(ALL_CLASSES, self.key)
     UNITS_PER_CLASS_LEVEL[self.key] = self.levels
+    CLASS_COLOR_STRINGS[self.key] = self.color_string
+end
+
+function ExtraClass:formatDescription(lvl, description)
+    description = (description:gsub("lvl1", lvl == 1 and "yellow" or "light_bg"))
+    description = (description:gsub("lvl2", lvl == 2 and "yellow" or "light_bg"))
+    description = (description:gsub("lvl3", lvl == 3 and "yellow" or "light_bg"))
+    return description
 end
 
 ExtraUnit = Object:extend()
@@ -140,7 +149,7 @@ function init_unit_pools(class_pool)
         run_class_pool = class_pool
     else
         local available_classes = table.shallow_copy(ALL_CLASSES)
-        table.remove(available_classes, 'explorer')
+        table.delete(available_classes, 'explorer')
         while #available_classes > MAX_CLASSES_PER_RUN do
             random:table_remove(available_classes)
         end
@@ -238,12 +247,15 @@ function extraUnitsShoot(unit, crit, dmg_m, r, mods)
     return false
 end
 
--- init each new unit you want included
+-- init each new unit and class you want included
 require 'extras/MonumentBuilder'
 MonumentBuilder{}
 
 require 'extras/Vampire'
 Vampire{}
+
+require 'extras/Laser'
+LaserClass{}
 
 require 'extras/DotLaser'
 DotLaser{}
