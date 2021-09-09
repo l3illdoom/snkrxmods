@@ -65,6 +65,7 @@ function Laser:init_player(player)
     end
 
     player.laser_targets = {}
+    player.laser_owner = self
     player.max_targets = callOrDefault('max_targets', 1)
     player.max_targets_add = callOrDefault('max_targets_add', 1)
     player.laser_acquire_range = callOrDefault('laser_acquire_range', 140)
@@ -74,6 +75,7 @@ function Laser:init_player(player)
     player.max_laser_lock = callOrDefault('max_laser_lock', player.laser_acquire_frequency * 1.25)
     player.laser_requires_los = self.laser_requires_los or false
     player.laser_thickness = self.laser_thickness or 2
+    player.laser_anim_time = {}
 
     player.attack_sensor = Circle(player.x, player.y, player.laser_acquire_range)
     local enemiesInRange = function()
@@ -92,10 +94,12 @@ function Laser:init_player(player)
                 local acquired = self:selectTarget(player, enemies)
                 self:target_acquired(player, acquired)
                 table.insert(player.laser_targets, acquired)
+                player.laser_anim_time[acquired.id] = 0
                 if (player.max_laser_lock > 0) then
                     player.t:after(player.max_laser_lock, function()
                         table.delete(player.laser_targets, acquired)
                         self:lost_target(player, acquired)
+                        player.laser_anim_time[acquired.id] = nil
                     end, 'laser_lock_' .. acquired.id)
                 end
             end
@@ -108,6 +112,7 @@ function Laser:init_player(player)
                 or (player.laser_requires_los and self:laserLosBlocked(player, acquired))
             then
                 table.delete(player.laser_targets, acquired)
+                player.laser_anim_time[acquired.id] = nil
                 self:lost_target(player, acquired)
                 player.t:cancel('laser_lock_'..acquired.id)
             end
@@ -122,6 +127,7 @@ function Laser:disableLaser(player)
         self:lost_target(player, target)
     end
     player.laser_targets = nil
+    player.laser_anim_time = nil
 end
 
 function Laser:laserLosBlocked(player, target)
@@ -131,14 +137,14 @@ function Laser:laserLosBlocked(player, target)
 end
 
 function Laser:draw2(unit)
-    if (unit.laser_targets and #unit.laser_targets > 0) then
+    if (unit.laser_targets and #unit.laser_targets > 0 and unit.laser_owner == self) then
         for _, target in ipairs(unit.laser_targets) do
-            self:draw_laser(unit, target)
+            self:draw_laser(unit, target, unit.laser_anim_time[target.id])
         end
     end
 end
 
-function Laser:draw_laser(unit, target)
+function Laser:draw_laser(unit, target, laser_time)
     graphics.line(unit.x, unit.y, target.x, target.y, unit.laser_color, unit.laser_thickness)
 end
 
@@ -167,6 +173,14 @@ function Laser:selectClosestTarget(unit, enemiesInRange)
         return closest
     end
     return random:table_remove(enemiesInRange)
+end
+
+function Laser:update(unit, dt)
+    if unit.laser_anim_time and unit.laser_owner == self then
+        for k, v in pairs(unit.laser_anim_time) do
+            unit.laser_anim_time[k] = v + dt
+        end
+    end
 end
 
 function LaserClass:update(unit, dt)

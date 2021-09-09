@@ -19,7 +19,7 @@ function ForcerLaser:init()
         max_laser_range = 115,
         laser_acquire_frequency = function(player) return player.level == 3 and 1 or 2 end,
         max_laser_lock = 3,
-        laser_color = function() return yellow_transparent_weak  end
+        laser_color = function() return yellow_transparent end
     })
 end
 
@@ -56,6 +56,31 @@ function ForcerLaser:lost_target(unit, target)
     if (target and target.id) then
         unit.t:cancel(self:getTagFor(target))
     end
+end
+
+function ForcerLaser:draw_laser(unit, target, laser_time)
+    local angle = unit:angle_to_object(target) - math.pi / 2 -- no clue why I have to offset this angle
+    graphics.push(unit.x, unit.y, angle)
+    local distance = math.distance(target.x, target.y, unit.x, unit.y)
+    local period = 25
+    local frequency = 0.2
+    local offset = (laser_time % frequency) / frequency * period
+    local dots = (distance - offset) / period + 1
+
+    for i=0, dots - 1 do
+        local w = 3 + (i % 4) * .5
+        local y = unit.y + i * period + offset
+        graphics.push(unit.x, y, math.pi / 2) -- adjust for the triangle pointing to the right
+        graphics.triangle(
+                unit.x,
+                y,
+                w,
+                w * 1.6,
+                unit.laser_color
+        )
+        graphics.pop()
+    end
+    graphics.pop()
 end
 
 ForcerLaser{}

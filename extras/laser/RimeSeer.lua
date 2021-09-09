@@ -17,7 +17,7 @@ function RimeSeer:init()
         laser_acquire_range = 110,
         laser_acquire_frequency = 3.5,
         max_laser_range = 150,
-        laser_color = function() return blue2_transparent_weak end,
+        laser_color = function() return ColorRamp(blue2_transparent, 0.025) end,
         laser_thickness = 1.3
     })
 end
@@ -74,5 +74,18 @@ function RimeSeer:lost_target(unit, target)
         target:remove_dot('rime_seer')
     end
 end
+
+function RimeSeer:draw_laser(unit, target, laser_time)
+    local period = 1.25
+    local color_period = period * 2
+    local color = unit.laser_color[math.floor(
+            math.remap((laser_time % color_period) / color_period, 0, 1, -10, 10)
+    )]
+    local thickness = 1.3 + ((laser_time % period) / period * 2)
+    if laser_time % (period * 2) / (period * 2) > 0.5 then
+        thickness = 3.3 - thickness
+    end
+    graphics.line(unit.x, unit.y, target.x, target.y, color, thickness)
+    end
 
 RimeSeer{}
