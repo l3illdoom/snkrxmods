@@ -7,7 +7,22 @@ require 'objects'
 require 'player'
 require 'enemies'
 require 'media'
+require 'extra-units'
 
+get_character_stat_string = function(character, level)
+  local group = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile'})
+  local player = Player{group = group, leader = true, character = character, level = level, follower_index = 1}
+  player:update(0)
+  return '[red]HP: [red]' .. player.max_hp .. '[fg], [red]DMG: [red]' .. player.dmg .. '[fg], [green]ASPD: [green]' .. math.round(player.aspd_m, 2) .. 'x[fg], [blue]AREA: [blue]' ..
+          math.round(player.area_dmg_m*player.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(player.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(player.v, 2) .. '[fg]'
+end
+
+get_character_stat = function(character, level, stat)
+  local group = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile'})
+  local player = Player{group = group, leader = true, character = character, level = level, follower_index = 1}
+  player:update(0)
+  return math.round(player[stat], 2)
+end
 
 function init()
   shared_init()
@@ -253,24 +268,7 @@ function init()
     ['explorer'] = fg[0],
   }
 
-  class_color_strings = {
-    ['warrior'] = 'yellow',
-    ['ranger'] = 'green',
-    ['healer'] = 'green',
-    ['conjurer'] = 'orange',
-    ['mage'] = 'blue',
-    ['nuker'] = 'red',
-    ['rogue'] = 'red',
-    ['enchanter'] = 'blue',
-    ['psyker'] = 'fg',
-    ['curser'] = 'purple',
-    ['forcer'] = 'yellow',
-    ['swarmer'] = 'orange',
-    ['voider'] = 'purple',
-    ['sorcerer'] = 'blue2',
-    ['mercenary'] = 'yellow2',
-    ['explorer'] = 'fg',
-  }
+  class_color_strings = CLASS_COLOR_STRINGS
 
   character_names = {
     ['vagrant'] = 'Vagrant',
@@ -576,21 +574,6 @@ function init()
     ['thief'] = '[red]Rogue, [yellow2]Mercenary',
     ['vampire'] = '[red]Rogue, [green]Healer, [blue]Enchanter'
   }
-
-  get_character_stat_string = function(character, level)
-    local group = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile'})
-    local player = Player{group = group, leader = true, character = character, level = level, follower_index = 1}
-    player:update(0)
-    return '[red]HP: [red]' .. player.max_hp .. '[fg], [red]DMG: [red]' .. player.dmg .. '[fg], [green]ASPD: [green]' .. math.round(player.aspd_m, 2) .. 'x[fg], [blue]AREA: [blue]' ..
-    math.round(player.area_dmg_m*player.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(player.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(player.v, 2) .. '[fg]'
-  end
-
-  get_character_stat = function(character, level, stat)
-    local group = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile'})
-    local player = Player{group = group, leader = true, character = character, level = level, follower_index = 1}
-    player:update(0)
-    return math.round(player[stat], 2)
-  end
 
   character_descriptions = {
     ['vagrant'] = function(lvl) return '[fg]shoots a projectile that deals [yellow]' .. get_character_stat('vagrant', lvl, 'dmg') .. '[fg] damage' end,
@@ -1091,10 +1074,42 @@ function init()
     ['vampire'] = 2,
   }
 
+  projectile_launchers = {'vagrant', 'archer', 'scout', 'outlaw', 'blade', 'wizard', 'cannoneer', 'dual_gunner', 'hunter', 'spellblade', 'engineer', 'corruptor', 'beastmaster', 'jester', 'assassin', 'barrager',
+                          'arcanist', 'illusionist', 'artificer', 'miner', 'thief', 'sentry', 'vampire'}
+
   launches_projectiles = function(character)
-    local classes = {'vagrant', 'archer', 'scout', 'outlaw', 'blade', 'wizard', 'cannoneer', 'dual_gunner', 'hunter', 'spellblade', 'engineer', 'corruptor', 'beastmaster', 'jester', 'assassin', 'barrager', 
-      'arcanist', 'illusionist', 'artificer', 'miner', 'thief', 'sentry', 'vampire'}
-    return table.any(classes, function(v) return v == character end)
+    return table.any(projectile_launchers, function(v) return v == character end)
+  end
+
+  for k, unit in pairs(EXTRA_UNITS) do
+    character_names[k] = unit.name
+    character_colors[k] = unit.color()
+    character_color_strings[k] = unit.color_string
+    character_classes[k] = unit.classes
+    character_class_strings[k] = unit:get_class_string()
+    character_descriptions[k] = unit.get_description
+    character_effect_names[k] = unit.effect_name
+    character_effect_names_gray[k] = unit:get_effect_description_gray()
+    character_effect_descriptions[k] = unit.get_effect_description
+    character_effect_descriptions_gray[k] = function() return unit:get_effect_description_gray() end
+    character_stats[k] = function(lvl) return get_character_stat_string(k, lvl) end
+    character_tiers[k] = unit.tier
+
+    if (tier_to_characters[unit.tier] == nil) then
+      print('yep, its nil')
+    end
+
+    table.insert(tier_to_characters[unit.tier], k)
+
+    if (unit.launches_projectiles) then
+      table.insert(projectile_launchers, k)
+    end
+    if (not unit.attacks) then
+      table.insert(non_attacking_characters, k)
+    end
+    if (not unit.has_cooldown) then
+      table.insert(non_cooldown_characters, k)
+    end
   end
 
   get_number_of_units_per_class = function(units)

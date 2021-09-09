@@ -907,6 +907,13 @@ function Player:init(args)
         end
       end
     end, nil, nil, 'buff')
+  else
+    local extra_unit = EXTRA_UNITS[self.character]
+    if (extra_unit) then
+      extra_unit:init_player(self)
+    else
+      print('no extra unit found for ' .. self.character .. '!')
+    end
   end
 
   self:calculate_stats(true)
