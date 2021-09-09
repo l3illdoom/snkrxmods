@@ -57,7 +57,7 @@ UNITS_PER_CLASS_LEVEL = {
     ['voider'] = {2, 4},
     ['sorcerer'] = {2, 4, 6},
     ['mercenary'] = {2, 4},
-    ['explorer'] = {1}
+    ['explorer'] = {1, 1}
 }
 
 ExtraClass = Object:extend()
