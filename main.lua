@@ -330,6 +330,7 @@ function init()
     ['usurer'] = 'Usurer',
     ['gambler'] = 'Gambler',
     ['thief'] = 'Thief',
+    ['vampire'] = 'Vampire',
   }
 
   character_colors = {
@@ -390,6 +391,7 @@ function init()
     ['usurer'] = purple[0],
     ['gambler'] = yellow2[0],
     ['thief'] = red[0],
+    ['vampire'] = red[0],
   }
 
   character_color_strings = {
@@ -450,6 +452,7 @@ function init()
     ['usurer'] = 'purple',
     ['gambler'] = 'yellow2',
     ['thief'] = 'red',
+    ['vampire'] = 'red',
   }
 
   character_classes = {
@@ -510,6 +513,7 @@ function init()
     ['usurer'] = {'curser', 'mercenary', 'voider'},
     ['gambler'] = {'mercenary', 'sorcerer'},
     ['thief'] = {'rogue', 'mercenary'},
+    ['vampire'] = {'rogue', 'healer'},
   }
 
   character_class_strings = {
@@ -570,6 +574,7 @@ function init()
     ['usurer'] = '[purple]Curser, [yellow2]Mercenary, [purple]Voider',
     ['gambler'] = '[yellow2]Mercenary, [blue2]Sorcerer',
     ['thief'] = '[red]Rogue, [yellow2]Mercenary',
+    ['vampire'] = '[red]Rogue, [green]Healer'
   }
 
   get_character_stat_string = function(character, level)
@@ -647,6 +652,7 @@ function init()
     ['usurer'] = function(lvl) return '[fg]curses [yellow]3[fg] nearby enemies indefinitely with debt, dealing [yellow]' .. get_character_stat('usurer', lvl, 'dmg') .. '[fg] damage per second' end,
     ['gambler'] = function(lvl) return '[fg]deal [yellow]2X[fg] damage to a single random enemy where X is how much gold you have' end,
     ['thief'] = function(lvl) return '[fg]throws a knife that deals [yellow]' .. 2*get_character_stat('thief', lvl, 'dmg') .. '[fg] damage and chains [yellow]5[fg] times' end,
+    ['vampire'] = function(lvl) return '[fg]throws a short-range knife that deals [yellow]' .. get_character_stat('vampire', lvl, 'dmg') .. '[fg] damage and creates a healing orb on hit' end,
   }
 
   character_effect_names = {
@@ -707,6 +713,7 @@ function init()
     ['usurer'] = '[purple]Bankruptcy',
     ['gambler'] = '[yellow2]Multicast',
     ['thief'] = '[red]Ultrakill',
+    ['vampire'] = '[red]Soul Suck',
   }
 
   character_effect_names_gray = {
@@ -767,6 +774,7 @@ function init()
     ['usurer'] = '[light_bg]Bankruptcy',
     ['gambler'] = '[light_bg]Multicast',
     ['thief'] = '[light_bg]Ultrakill',
+    ['vampire'] = '[light_bg]Soul Suck',
   }
 
   character_effect_descriptions = {
@@ -827,6 +835,7 @@ function init()
     ['usurer'] = function() return '[fg]if the same enemy is cursed [yellow]3[fg] times it takes [yellow]' .. 10*get_character_stat('usurer', 3, 'dmg') .. '[fg] damage' end,
     ['gambler'] = function() return '[yellow]60/40/20%[fg] chance to cast the attack [yellow]2/3/4[fg] times' end,
     ['thief'] = function() return '[fg]if the knife crits it deals [yellow]' .. 10*get_character_stat('thief', 3, 'dmg') .. '[fg] damage, chains [yellow]10[fg] times and grants [yellow]1[fg] gold' end,
+    ['vampire'] = function() return '[fg]if the knife crits your team deals [yellow]20%[fg] more damage until end of combat' end,
   }
 
   character_effect_descriptions_gray = {
@@ -883,10 +892,11 @@ function init()
     ['warden'] = function() return '[light_bg]creates the force field around 2 units' end,
     ['psychic'] = function() return '[light_bg]the attack can happen from any distance and repeats once' end,
     ['miner'] = function() return '[light_bg]release 8 homing projectiles instead and they pierce twice' end,
-    ['merchant'] = function() return '[light_bg]your first item reroll is always free' end,
+    ['merchant'] = function() return '[light_bg]your first item reroll is always free, shop rerolls are 1' end,
     ['usurer'] = function() return '[light_bg]if the same enemy is cursed 3 times it takes ' .. 10*get_character_stat('usurer', 3, 'dmg') .. ' damage' end,
     ['gambler'] = function() return '[light_bg]60/40/20% chance to cast the attack 2/3/4 times' end,
     ['thief'] = function() return '[light_bg]if the knife crits it deals ' .. 10*get_character_stat('thief', 3, 'dmg') .. ' damage, chains 10 times and grants 1 gold' end,
+    ['vampire'] = function() return '[light_bg]if the knife crits the vampire deals 20% more damage until end of combat' end,
   }
 
   character_stats = {
@@ -947,6 +957,7 @@ function init()
     ['usurer'] = function(lvl) return get_character_stat_string('usurer', lvl) end,
     ['gambler'] = function(lvl) return get_character_stat_string('gambler', lvl) end,
     ['thief'] = function(lvl) return get_character_stat_string('thief', lvl) end,
+    ['vampire'] = function(lvl) return get_character_stat_string('vampire', lvl) end,
   }
 
   class_stat_multipliers = {
@@ -1011,7 +1022,7 @@ function init()
 
   tier_to_characters = {
     [1] = {'vagrant', 'swordsman', 'magician', 'archer', 'scout', 'cleric', 'arcanist', 'merchant'},
-    [2] = {'wizard', 'bomber', 'sage', 'squire', 'dual_gunner', 'sentry', 'chronomancer', 'barbarian', 'cryomancer', 'beastmaster', 'jester', 'carver', 'psychic', 'witch', 'silencer', 'outlaw', 'miner'},
+    [2] = {'wizard', 'bomber', 'sage', 'squire', 'dual_gunner', 'sentry', 'chronomancer', 'barbarian', 'cryomancer', 'beastmaster', 'jester', 'carver', 'psychic', 'witch', 'silencer', 'outlaw', 'miner', 'vampire'},
     [3] = {'elementor', 'stormweaver', 'spellblade', 'psykeeper', 'engineer', 'juggernaut', 'pyromancer', 'host', 'assassin', 'bane', 'barrager', 'infestor', 'flagellant', 'artificer', 'usurer', 'gambler'},
     [4] = {'priest', 'highlander', 'psykino', 'fairy', 'blade', 'plague_doctor', 'cannoneer', 'vulcanist', 'warden', 'corruptor', 'thief'},
   }
@@ -1077,11 +1088,12 @@ function init()
     ['usurer'] = 3,
     ['gambler'] = 3,
     ['thief'] = 4,
+    ['vampire'] = 2,
   }
 
   launches_projectiles = function(character)
     local classes = {'vagrant', 'archer', 'scout', 'outlaw', 'blade', 'wizard', 'cannoneer', 'dual_gunner', 'hunter', 'spellblade', 'engineer', 'corruptor', 'beastmaster', 'jester', 'assassin', 'barrager', 
-      'arcanist', 'illusionist', 'artificer', 'miner', 'thief', 'sentry'}
+      'arcanist', 'illusionist', 'artificer', 'miner', 'thief', 'sentry', 'vampire'}
     return table.any(classes, function(v) return v == character end)
   end
 

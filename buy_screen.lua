@@ -1,3 +1,5 @@
+COST_TO_LEVEL_SHOP = 3
+
 BuyScreen = Object:extend()
 BuyScreen:implement(State)
 BuyScreen:implement(GameObject)
@@ -61,7 +63,7 @@ function BuyScreen:on_enter(from, level, loop, units, passives, shop_level, shop
   self.locked = locked_state and locked_state.locked
   LockButton{group = self.main, x = 205, y = 18, parent = self}
 
-  self:set_cards(self.shop_level, nil, true)
+  self:set_cards(self.shop_level, nil, true, self.level)
   self:set_party_and_sets()
   self:set_items()
 
@@ -340,7 +342,7 @@ function BuyScreen:gain_gold(amount)
 end
 
 
-function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call)
+function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call, level)
   if self.cards then for i = 1, 3 do if self.cards[i] then self.cards[i]:die(dont_spawn_effect) end end end
   self.cards = {}
   local all_units = {}
@@ -350,6 +352,7 @@ function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call)
   local shop_level = shop_level or 1
   local tier_weights = level_to_shop_odds[shop_level]
   repeat 
+    --unit_1 = level == 1 and 'vampire' or random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     unit_1 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     unit_2 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     unit_3 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
@@ -817,7 +820,7 @@ function LevelButton:update(dt)
 
   if self.selected and input.m1.pressed then
     if self.parent.shop_level >= 5 then return end
-    if gold < 5 then
+    if gold < COST_TO_LEVEL_SHOP then
       self.spring:pull(0.2, 200, 10)
       self.selected = true
       error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -841,7 +844,7 @@ function LevelButton:update(dt)
       self:create_info_text()
       self.selected = true
       self.spring:pull(0.2, 200, 10)
-      gold = gold - 5
+      gold = gold - COST_TO_LEVEL_SHOP
       self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
       self.text = Text({{text = '[bg10]' .. tostring(self.parent.shop_level), font = pixul_font, alignment = 'center'}}, global_text_tags)
       system.save_run(self.parent.level, self.parent.loop, gold, self.parent.units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, run_passive_pool, locked_state)
@@ -907,7 +910,7 @@ function LevelButton:create_info_text()
     local t41, t42 = get_shop_odds(self.parent.shop_level, 4), get_shop_odds(self.parent.shop_level+1, 4)
     self.info_text = InfoText{group = main.current.ui}
     self.info_text:activate({
-      {text = '[yellow]Lv.' .. self.parent.shop_level .. '[fg] shop, XP: [yellow]' .. self.shop_xp .. '/' .. self.max_xp .. '[fg], +1 XP cost: [yellow]5', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
+      {text = '[yellow]Lv.' .. self.parent.shop_level .. '[fg] shop, XP: [yellow]' .. self.shop_xp .. '/' .. self.max_xp .. '[fg], +1 XP cost: [yellow]' .. COST_TO_LEVEL_SHOP, font = pixul_font, alignment = 'center', height_multiplier = 1.5},
       {text = '[bg10]chances of units appearing on the shop', font = pixul_font, alignment = 'center', height_multiplier = 1.25},
       {text = '[yellow]current shop level                  [fgm10]next shop level', font = pixul_font, alignment = 'left', height_multiplier = 1.25},
       {text = '[fg]tier 1: ' .. t11 .. '%' .. tostring(t11 < 10 and '  ' or '') .. '                                 [fgm8]tier 1: ' .. t12 .. '%', font = pixul_font, alignment = 'left', height_multiplier = 1.25},
@@ -965,8 +968,19 @@ function RerollButton:init(args)
   self:init_game_object(args)
   self.interact_with_mouse = true
   if self.parent:is(BuyScreen) then
+    self.reroll_cost = 2
+    local merchant
+    for _, unit in ipairs(self.units) do
+      if unit.character == 'merchant' then
+        merchant = unit
+        break
+      end
+    end
+    if merchant and merchant.level == 3 then
+      self.reroll_cost = 1
+    end
     self.shape = Rectangle(self.x, self.y, 54, 16)
-    self.text = Text({{text = '[bg10]reroll: [yellow]2', font = pixul_font, alignment = 'center'}}, global_text_tags)
+    self.text = Text({{text = '[bg10]reroll: [yellow]' .. self.reroll_cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
   elseif self.parent:is(Arena) then
     self.shape = Rectangle(self.x, self.y, 60, 16)
     local merchant
@@ -991,7 +1005,7 @@ function RerollButton:update(dt)
 
   if (self.selected and input.m1.pressed) or input.r.pressed then
     if self.parent:is(BuyScreen) then
-      if gold < 2 then
+      if gold < self.reroll_cost then
         self.spring:pull(0.2, 200, 10)
         self.selected = true
         error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -1008,7 +1022,7 @@ function RerollButton:update(dt)
         self.parent:set_cards(self.parent.shop_level, true)
         self.selected = true
         self.spring:pull(0.2, 200, 10)
-        gold = gold - 2
+        gold = gold - self.reroll_cost
         self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
         system.save_run(self.parent.level, self.parent.loop, gold, self.parent.units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, run_passive_pool, locked_state)
       end
