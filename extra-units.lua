@@ -247,6 +247,19 @@ function extraUnitsShoot(unit, crit, dmg_m, r, mods)
     return false
 end
 
+function extraUnitsUpdate(unit, dt)
+    for _, class in EXTRA_CLASSES do
+        if class.update then
+            class:update(unit, dt)
+        end
+    end
+    for _, extraUnit in EXTRA_UNITS do
+        if (extraUnit.update) then
+            extraUnit.update(unit, dt)
+        end
+    end
+end
+
 -- init each new unit and class you want included
 require 'extras/MonumentBuilder'
 MonumentBuilder{}

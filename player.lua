@@ -1227,6 +1227,8 @@ end
 function Player:update(dt)
   self:update_game_object(dt)
 
+  extraUnitsUpdate(unit, dt)
+
   if self.character == 'squire' then
     local all_units = self:get_all_units()
     for _, unit in ipairs(all_units) do
@@ -1249,22 +1251,11 @@ function Player:update(dt)
   if self.character == 'vagrant' and self.level == 3 then
     local class_levels = get_class_levels(self:get_all_units())
     local number_of_active_sets = 0
-    if class_levels.ranger >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.warrior >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mage >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.rogue >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.healer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.conjurer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.enchanter >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.psyker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.nuker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.curser >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.forcer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.swarmer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.voider >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.sorcerer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mercenary >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.explorer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
+    for _, v in pairs(class_levels) do
+      if v >= 1 then
+        number_of_active_sets = number_of_active_sets + 1
+      end
+    end
     self.vagrant_dmg_m = 1 + 0.1*number_of_active_sets
     self.vagrant_aspd_m = 1 + 0.1*number_of_active_sets
   end
@@ -1315,22 +1306,10 @@ function Player:update(dt)
   if table.any(self.classes, function(v) return v == 'explorer' end) then
     local class_levels = get_class_levels(self:get_all_units())
     local number_of_active_sets = 0
-    if class_levels.ranger >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.warrior >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mage >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.rogue >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.healer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.conjurer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.enchanter >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.psyker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.nuker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.curser >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.forcer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.swarmer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.voider >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.sorcerer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mercenary >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.explorer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
+    for _, v in pairs(class_levels) do
+      if v >= 1 then number_of_active_sets = number_of_active_sets + 1 end
+    end
+
     self.explorer_dmg_m = 1 + 0.15*number_of_active_sets
     self.explorer_aspd_m = 1 + 0.15*number_of_active_sets
   end
