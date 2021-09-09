@@ -1095,10 +1095,6 @@ function init()
     character_stats[k] = function(lvl) return get_character_stat_string(k, lvl) end
     character_tiers[k] = unit.tier
 
-    if (tier_to_characters[unit.tier] == nil) then
-      print('yep, its nil')
-    end
-
     table.insert(tier_to_characters[unit.tier], k)
 
     if (unit.launches_projectiles) then
@@ -1306,6 +1302,25 @@ function init()
     ['psycholeak'] = 'Psycholeak',
     ['divine_blessing'] = 'Divine Blessing',
     ['hardening'] = 'Hardening',
+  }
+
+  passives_by_class = {
+    ['ranger'] = {'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow'},
+    ['warrior'] = {'berserking', 'unwavering_stance', 'unrelenting_stance'},
+    ['mage'] = {'chronomancy', 'awakening', 'divine_punishment'},
+    ['nuker'] = {'magnify', 'unleash'},
+    ['rogue'] = {'assassination', 'flying_daggers', 'ultimatum'},
+    ['healer'] = {'magnetism', 'blessing', 'haste', 'divine_barrage'},
+    ['conjurer'] = {'rearm', 'taunt', 'construct_instability'},
+    ['enchanter'] = {'reinforce', 'payback', 'enchanted'},
+    ['psyker'] = {'orbitism', 'psyker_orbs', 'psychosense', 'psychosink'},
+    ['curser'] = {'malediction', 'hextouch', 'whispers_of_doom'},
+    ['forcer'] = {'tremor', 'heavy_impact', 'fracture'},
+    ['swarmer'] = {'meat_shield', 'hive', 'baneling_burst'},
+    ['voider'] = {'call_of_the_void', 'seeping', 'deceleration', 'annihilation'},
+    ['sorcerer'] = {'freezing_field', 'burning_field', 'gravity_field'},
+    ['mercenary'] = {'magnetism', 'insurance', 'dividends'},
+    ['explorer'] = {},
   }
 
   passive_descriptions = {
@@ -1936,6 +1951,7 @@ function open_options(self)
             'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
             'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
           }
+          init_unit_pools()
           max_units = math.clamp(7 + current_new_game_plus, 7, 12)
           main:add(BuyScreen'buy_screen')
           locked_state = nil

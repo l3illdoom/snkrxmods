@@ -878,7 +878,7 @@ function WallCover:draw()
 end
 
 function string:gray()
-  result = (self:gsub("\\[[^\\]]+\\]", ""))
+  result = (self:gsub("%[[^%]]+%]", ""))
   return '[light_bg]' .. result
 end
 

@@ -3338,7 +3338,7 @@ Turret:implement(GameObject)
 Turret:implement(Physics)
 function Turret:init(args)
   self:init_game_object(args)
-  self:set_as_rectangle(14, 6, 'static', 'player')
+  self:set_as_rectangle(9, 4, 'static', 'player')
   self:set_restitution(0.5)
   self.hfx:add('hit', 1)
   self.color = orange[0]
