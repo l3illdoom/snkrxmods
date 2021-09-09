@@ -15,8 +15,8 @@ function ForcerLaser:init()
         attacks = true,
         max_targets = function(player) return player.level == 3 and 6 or 4 end,
         max_targets_add = function(player) return player.level == 3 and 4 or 2 end,
-        laser_acquire_range = 115,
-        max_laser_range = 130,
+        laser_acquire_range = 95,
+        max_laser_range = 115,
         laser_acquire_frequency = function(player) return player.level == 3 and 1 or 2 end,
         max_laser_lock = 3,
         laser_color = function() return yellow_transparent_weak  end

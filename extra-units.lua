@@ -1,4 +1,4 @@
-MAX_CLASSES_PER_RUN = 11 -- set this to how many classes you want (ignoring explorer, that's always added).
+MAX_CLASSES_PER_RUN = 12 -- set this to how many classes you want (ignoring explorer, that's always added).
 
 EXTRA_UNITS = { } -- map created during init_unit
 EXTRA_CLASSES = {} -- map created during init_class

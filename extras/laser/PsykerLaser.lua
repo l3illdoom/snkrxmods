@@ -38,6 +38,7 @@ override(Projectile, 'update', function(self, original, dt)
     if self.attack_sensor then
         self.attack_sensor:move_to(self.x, self.y)
     end
+    LASER_CLASS:update(self, dt)
 end)
 
 override(Projectile, 'init', function(self, original, args)
@@ -71,6 +72,7 @@ function OrbLaser:init()
     self.laser_acquire_frequency = 0.5
     self.max_laser_range = function(player) return player.laser_acquire_range * 1.1 end
     self.laser_color = function() return fg_transparent_week end
+    self.laser_thickness = 1.5
 end
 
 function OrbLaser:target_acquired(unit, target)

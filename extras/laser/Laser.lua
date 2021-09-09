@@ -173,6 +173,7 @@ function LaserClass:update(unit, dt)
     if not unit.laser_count_check then
         unit.laser_count_check = true
         local lvl = main.current.laser_level
+
         if unit.max_targets then
             unit.max_targets = unit.max_targets + (lvl == 2 and 2 or lvl == 1 and 1 or 0)
         end
