@@ -14,17 +14,23 @@ function MonumentBuilder:init(args)
 end
 
 function MonumentBuilder:get_description(lvl)
-    return '[fg]creates a monument that inspires your nearby units to attack [yellow]33% [fg]faster'
+    return '[fg]creates a monument that inspires your nearby units to attack [yellow]40% [fg]faster'
 end
 
 function MonumentBuilder:get_effect_description()
-    return '[fg]monuments last longer and add [yellow]33% [fg]defense'
+    return '[fg]monuments last longer and add [yellow]40% [fg]defense'
 end
 
 function MonumentBuilder:init_player(player)
     player.t:every(14, function()
         Monument{group = main.current.main, x = player.x, y = player.y, color = player.color, parent = player, level = player.level}
     end, nil, nil, 'spawn')
+end
+
+function MonumentBuilder:draw(unit)
+    if (unit.monumentd) then
+        graphics.rectangle(unit.x, unit.y, 1.25*unit.shape.w, 1.25*unit.shape.h, 3, 3, purple_transparent)
+    end
 end
 
 Monument = Object:extend()
@@ -157,6 +163,21 @@ function Monument:init(args)
     end)
     ]]--
 
+    self.t:every_immediate(0.2, function()
+        for _, unit in ipairs(self:get_objects_in_shape(self.heal_sensor, {Player})) do
+            unit.buffs.aspd:setMod('monument', 1.4)
+            if (self.level == 3) then
+                unit.buffs.def:setMod('monument', 1.4)
+            end
+            unit.monumentd = true
+            unit.t:after(0.25, function()
+                unit.buffs.aspd:clearMod('monument')
+                unit.buffs.def:clearMod('monument')
+                unit.monumentd = false
+            end, 'monument_debuff')
+        end
+    end, 0, nil, 'buff')
+
     self.t:after(12*(self.parent.conjurer_buff_m or 1)*(self.level == 3 and 1.25 or 1), function()
         self.t:every_immediate(0.05, function() self.hidden = not self.hidden end, 7, function()
             self.dead = true
@@ -167,8 +188,6 @@ function Monument:init(args)
                 Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*48, color = self.color, dmg = n*self.parent.dmg*self.parent.area_dmg_m, parent = self.parent}
                 _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
             end
-
-            --todo: reduce effects of players in range
         end)
     end)
 end
@@ -192,18 +211,4 @@ function Monument:draw()
     local lw = math.remap(self.heal_sensor.rs, 32, 256, 2, 4)
     for i = 1, 4 do graphics.arc('open', self.x, self.y, self.heal_sensor.rs, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
     graphics.pop()
-end
-
-function Monument:on_collision_enter(other, contact)
-    if table.any(main.current.player:get_all_units(), function(v) v:is(other) end) then
-       other.fairyd = true
-        print(other.character .. ' entered collision')
-    end
-end
-
-function Monument:on_collision_exit(other, contact)
-    if table.any(main.current.player:get_all_units(), function(v) v:is(other) end) then
-        other.fairyd = false
-        print(other.character .. 'exited collision')
-    end
 end

@@ -57,6 +57,14 @@ function ExtraUnit:get_effect_description_gray()
     return desc:gray()
 end
 
+function extraUnitsDraw(unit)
+    for k, v in pairs(EXTRA_UNITS) do
+        if (v.draw) then
+            v:draw(unit)
+        end
+    end
+end
+
 require 'extras/MonumentBuilder'
 -- init each new unit you want included
 MonumentBuilder{}

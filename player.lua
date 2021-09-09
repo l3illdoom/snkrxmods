@@ -1,3 +1,35 @@
+BuffGroup = Object:extend()
+function BuffGroup:init(args)
+  self.mods = {}
+  self.adds = {}
+end
+function BuffGroup:getMod()
+  local result = 1
+  for _, v in pairs(self.mods) do
+    result = result * v
+  end
+  return result
+end
+function BuffGroup:getAdd()
+  local result = 0
+  for _, v in pairs(self.adds) do
+    result = result + v
+  end
+  return result
+end
+function BuffGroup:setMod(tag, value)
+  self.mods[tag] = value
+end
+function BuffGroup:clearMod(tag)
+  self.mods[tag] = nil
+end
+function BuffGroup:setAdd(tag, value)
+  self.adds[tag] = value
+end
+function BuffGroup:clearAdd(tag)
+  self.adds[tag] = nil
+end
+
 Player = Object:extend()
 Player:implement(GameObject)
 Player:implement(Physics)
@@ -13,6 +45,16 @@ function Player:init(args)
   self.visual_shape = 'rectangle'
   self.classes = character_classes[self.character]
   self.damage_dealt = 0
+  self.buffs = {
+    def = BuffGroup{},
+    aspd = BuffGroup{},
+    dmg = BuffGroup{},
+    def = BuffGroup{},
+    area_size = BuffGroup{},
+    area_dmg = BuffGroup{},
+    mvspd = BuffGroup{},
+    hp = BuffGroup{},
+  }
   self.vampire_dmg_m = 1
 
   if self.character == 'vagrant' then
@@ -1380,14 +1422,26 @@ function Player:update(dt)
     else self.haste_mvspd_m = 1 end
   end
 
-  self.buff_def_a = (self.warrior_def_a or 0)
-  self.buff_aspd_m = (self.chronomancer_aspd_m or 1)*(self.vagrant_aspd_m or 1)*(self.outlaw_aspd_m or 1)*(self.fairy_aspd_m or 1)*(self.psyker_aspd_m or 1)*(self.chronomancy_aspd_m or 1)*(self.awakening_aspd_m or 1)*(self.berserking_aspd_m or 1)*(self.reinforce_aspd_m or 1)*(self.squire_aspd_m or 1)*(self.speed_3_aspd_m or 1)*(self.last_stand_aspd_m or 1)*(self.enchanted_aspd_m or 1)*(self.explorer_aspd_m or 1)*(self.magician_aspd_m or 1)
-  self.buff_dmg_m = (self.squire_dmg_m or 1)*(self.vagrant_dmg_m or 1)*(self.enchanter_dmg_m or 1)*(self.swordsman_dmg_m or 1)*(self.flagellant_dmg_m or 1)*(self.psyker_dmg_m or 1)*(self.ballista_dmg_m or 1)*(self.awakening_dmg_m or 1)*(self.reinforce_dmg_m or 1)*(self.payback_dmg_m or 1)*(self.immolation_dmg_m or 1)*(self.damage_4_dmg_m or 1)*(self.offensive_stance_dmg_m or 1)*(self.last_stand_dmg_m or 1)*(self.dividends_dmg_m or 1)*(self.explorer_dmg_m or 1)*(self.vampire_dmg_m or 1)
-  self.buff_def_m = (self.squire_def_m or 1)*(self.ouroboros_def_m or 1)*(self.unwavering_stance_def_m or 1)*(self.reinforce_def_m or 1)*(self.defensive_stance_def_m or 1)*(self.last_stand_def_m or 1)*(self.unrelenting_stance_def_m or 1)*(self.hardening_def_m or 1)
-  self.buff_area_size_m = (self.nuker_area_size_m or 1)*(self.magnify_area_size_m or 1)*(self.unleash_area_size_m or 1)*(self.last_stand_area_size_m or 1)
-  self.buff_area_dmg_m = (self.nuker_area_dmg_m or 1)*(self.amplify_area_dmg_m or 1)*(self.unleash_area_dmg_m or 1)*(self.last_stand_area_dmg_m or 1)
-  self.buff_mvspd_m = (self.wall_rider_mvspd_m or 1)*(self.centipede_mvspd_m or 1)*(self.squire_mvspd_m or 1)*(self.last_stand_mvspd_m or 1)*(self.haste_mvspd_m or 1)
-  self.buff_hp_m = (self.flagellant_hp_m or 1)
+  self.buff_def_a = self.buffs.def:getAdd() + (self.warrior_def_a or 0)
+  self.buff_def_m = self.buffs.def:getMod() * (self.squire_def_m or 1)*(self.ouroboros_def_m or 1)*(self.unwavering_stance_def_m or 1)*(self.reinforce_def_m or 1)*(self.defensive_stance_def_m or 1)*(self.last_stand_def_m or 1)*(self.unrelenting_stance_def_m or 1)*(self.hardening_def_m or 1)
+
+  self.buff_aspd_a = self.buffs.aspd:getAdd()
+  self.buff_aspd_m = self.buffs.aspd:getMod() * (self.chronomancer_aspd_m or 1)*(self.vagrant_aspd_m or 1)*(self.outlaw_aspd_m or 1)*(self.fairy_aspd_m or 1)*(self.psyker_aspd_m or 1)*(self.chronomancy_aspd_m or 1)*(self.awakening_aspd_m or 1)*(self.berserking_aspd_m or 1)*(self.reinforce_aspd_m or 1)*(self.squire_aspd_m or 1)*(self.speed_3_aspd_m or 1)*(self.last_stand_aspd_m or 1)*(self.enchanted_aspd_m or 1)*(self.explorer_aspd_m or 1)*(self.magician_aspd_m or 1)
+
+  self.buff_dmg_a = self.buffs.dmg:getAdd()
+  self.buff_dmg_m = self.buffs.dmg:getMod() * (self.squire_dmg_m or 1)*(self.vagrant_dmg_m or 1)*(self.enchanter_dmg_m or 1)*(self.swordsman_dmg_m or 1)*(self.flagellant_dmg_m or 1)*(self.psyker_dmg_m or 1)*(self.ballista_dmg_m or 1)*(self.awakening_dmg_m or 1)*(self.reinforce_dmg_m or 1)*(self.payback_dmg_m or 1)*(self.immolation_dmg_m or 1)*(self.damage_4_dmg_m or 1)*(self.offensive_stance_dmg_m or 1)*(self.last_stand_dmg_m or 1)*(self.dividends_dmg_m or 1)*(self.explorer_dmg_m or 1)*(self.vampire_dmg_m or 1)
+
+  self.buff_area_size_a = self.buffs.area_size:getAdd()
+  self.buff_area_size_m = self.buffs.area_size:getMod() * (self.nuker_area_size_m or 1)*(self.magnify_area_size_m or 1)*(self.unleash_area_size_m or 1)*(self.last_stand_area_size_m or 1)
+
+  self.buff_area_dmg_a = self.buffs.area_dmg:getAdd()
+  self.buff_area_dmg_m = self.buffs.area_dmg:getMod() * (self.nuker_area_dmg_m or 1)*(self.amplify_area_dmg_m or 1)*(self.unleash_area_dmg_m or 1)*(self.last_stand_area_dmg_m or 1)
+
+  self.buff_mvspd_a = self.buffs.mvspd:getAdd()
+  self.buff_mvspd_m = self.buffs.mvspd:getMod() * (self.wall_rider_mvspd_m or 1)*(self.centipede_mvspd_m or 1)*(self.squire_mvspd_m or 1)*(self.last_stand_mvspd_m or 1)*(self.haste_mvspd_m or 1)
+
+  self.buff_hp_a = self.buffs.hp:getAdd()
+  self.buff_hp_m = self.buffs.hp:getMod() * (self.flagellant_hp_m or 1)
   self:calculate_stats()
 
   if self.attack_sensor then self.attack_sensor:move_to(self.x, self.y) end
@@ -1506,6 +1560,8 @@ function Player:draw()
     if self.vampired then
       graphics.rectangle(self.x, self.y, 1.33*self.shape.w, 1.33*self.shape.h, 3, 3, red_transparent)
     end
+
+    extraUnitsDraw(self)
   end
   graphics.pop()
 end

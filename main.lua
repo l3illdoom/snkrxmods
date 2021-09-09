@@ -1089,7 +1089,7 @@ function init()
     character_class_strings[k] = unit:get_class_string()
     character_descriptions[k] = unit.get_description
     character_effect_names[k] = unit.effect_name
-    character_effect_names_gray[k] = unit:get_effect_description_gray()
+    character_effect_names_gray[k] = unit.effect_name_gray
     character_effect_descriptions[k] = unit.get_effect_description
     character_effect_descriptions_gray[k] = function() return unit:get_effect_description_gray() end
     character_stats[k] = function(lvl) return get_character_stat_string(k, lvl) end
