@@ -54,7 +54,7 @@ function ExtraUnit:init_unit(args)
         get_effect_description: a function describing the lvl 3 ability
     --]]
     self.effect_name_gray = self.effect_name:gray()
-    self.name = (self.key:gsub("_", " ")):titleCase()
+    self.name = (self.key:gsub("%_", " ")):titleCase()
     self.fires_projectiles = args.fires_projectiles or false
     self.attacks = args.attacks or false
     self.has_cooldown = args.has_cooldown or false
@@ -131,6 +131,8 @@ function init_unit_pools(class_pool)
     print('tier 4 pool: ' .. #run_tier_to_characters[4])
 
     run_passive_pool = removeClassPassives(run_passive_pool, missing_classes)
+
+    --display_class_stats()
 end
 
 function filterTierToClasses(candidate)
@@ -164,6 +166,34 @@ function removeClassPassives(passive_pool, missing_classes)
     --end)
 end
 
-require 'extras/MonumentBuilder'
+function display_class_stats()
+    local unit_count_by_class_count = {
+    }
+
+    for _, classes in pairs(character_classes) do
+        for _, class in pairs(classes) do
+            if not unit_count_by_class_count[class] then
+                unit_count_by_class_count[class] = {}
+            end
+            local counts = unit_count_by_class_count[class]
+            counts[#classes] = (counts[#classes] or 1) + 1
+        end
+    end
+    print(table.tostring(unit_count_by_class_count))
+end
+
+function extraUnitsShoot(unit, crit, dmg_m, r, mods)
+    local extra_unit = EXTRA_UNITS[unit.character]
+    if (extra_unit and extra_unit[shoot]) then
+        extra_unit:shoot(unit, crit, dmg_m, r, mods)
+        return true
+    end
+    return false
+end
+
 -- init each new unit you want included
+require 'extras/MonumentBuilder'
 MonumentBuilder{}
+
+require 'extras/Vampire'
+Vampire{}

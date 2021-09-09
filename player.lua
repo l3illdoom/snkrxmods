@@ -55,7 +55,6 @@ function Player:init(args)
     mvspd = BuffGroup{},
     hp = BuffGroup{},
   }
-  self.vampire_dmg_m = 1
 
   if self.character == 'vagrant' then
     self.attack_sensor = Circle(self.x, self.y, 96)
@@ -176,15 +175,6 @@ function Player:init(args)
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
       if closest_enemy then
         self:shoot(self:angle_to_object(closest_enemy), {chain = (self.level == 3 and 10 or 5)})
-      end
-    end, nil, nil, 'shoot')
-
-  elseif self.character == 'vampire' then
-    self.attack_sensor = Circle(self.x, self.y, 45)
-    self.t:cooldown(3, function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
-      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
-      if closest_enemy then
-        self:shoot(self:angle_to_object(closest_enemy), {heals_on_hit = true, vampire_buff_on_crit = self.level == 3})
       end
     end, nil, nil, 'shoot')
 
@@ -1429,7 +1419,7 @@ function Player:update(dt)
   self.buff_aspd_m = self.buffs.aspd:getMod() * (self.chronomancer_aspd_m or 1)*(self.vagrant_aspd_m or 1)*(self.outlaw_aspd_m or 1)*(self.fairy_aspd_m or 1)*(self.psyker_aspd_m or 1)*(self.chronomancy_aspd_m or 1)*(self.awakening_aspd_m or 1)*(self.berserking_aspd_m or 1)*(self.reinforce_aspd_m or 1)*(self.squire_aspd_m or 1)*(self.speed_3_aspd_m or 1)*(self.last_stand_aspd_m or 1)*(self.enchanted_aspd_m or 1)*(self.explorer_aspd_m or 1)*(self.magician_aspd_m or 1)
 
   self.buff_dmg_a = self.buffs.dmg:getAdd()
-  self.buff_dmg_m = self.buffs.dmg:getMod() * (self.squire_dmg_m or 1)*(self.vagrant_dmg_m or 1)*(self.enchanter_dmg_m or 1)*(self.swordsman_dmg_m or 1)*(self.flagellant_dmg_m or 1)*(self.psyker_dmg_m or 1)*(self.ballista_dmg_m or 1)*(self.awakening_dmg_m or 1)*(self.reinforce_dmg_m or 1)*(self.payback_dmg_m or 1)*(self.immolation_dmg_m or 1)*(self.damage_4_dmg_m or 1)*(self.offensive_stance_dmg_m or 1)*(self.last_stand_dmg_m or 1)*(self.dividends_dmg_m or 1)*(self.explorer_dmg_m or 1)*(self.vampire_dmg_m or 1)
+  self.buff_dmg_m = self.buffs.dmg:getMod() * (self.squire_dmg_m or 1)*(self.vagrant_dmg_m or 1)*(self.enchanter_dmg_m or 1)*(self.swordsman_dmg_m or 1)*(self.flagellant_dmg_m or 1)*(self.psyker_dmg_m or 1)*(self.ballista_dmg_m or 1)*(self.awakening_dmg_m or 1)*(self.reinforce_dmg_m or 1)*(self.payback_dmg_m or 1)*(self.immolation_dmg_m or 1)*(self.damage_4_dmg_m or 1)*(self.offensive_stance_dmg_m or 1)*(self.last_stand_dmg_m or 1)*(self.dividends_dmg_m or 1)*(self.explorer_dmg_m or 1)
 
   self.buff_area_size_a = self.buffs.area_size:getAdd()
   self.buff_area_size_m = self.buffs.area_size:getMod() * (self.nuker_area_size_m or 1)*(self.magnify_area_size_m or 1)*(self.unleash_area_size_m or 1)*(self.last_stand_area_size_m or 1)
@@ -1555,10 +1545,6 @@ function Player:draw()
 
     if self.fairyd then
       graphics.rectangle(self.x, self.y, 1.25*self.shape.w, 1.25*self.shape.h, 3, 3, blue_transparent)
-    end
-
-    if self.vampired then
-      graphics.rectangle(self.x, self.y, 1.33*self.shape.w, 1.33*self.shape.h, 3, 3, red_transparent)
     end
 
     extraUnitsDraw(self)
@@ -1919,10 +1905,6 @@ function Player:shoot(r, mods)
     end
   end
 
-  if self.character == 'vampire' then
-    dmg_m = dmg_m*2
-  end
-
   if crit and mods.spawn_critters_on_crit then
     critter1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     trigger:after(0.01, function()
@@ -1986,10 +1968,10 @@ function Player:shoot(r, mods)
         end
       end, 20)
     end
-  else
+  elseif not extraUnitsShoot(self, crit, dmg_m, r, mods) then
     HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
     local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
-    parent = self, level = self.level, vampire_buff_on_hit = crit and mods.vampire_buff_on_crit}
+    parent = self, level = self.level}
     Projectile(table.merge(t, mods or {}))
   end
 
@@ -2003,7 +1985,7 @@ function Player:shoot(r, mods)
   elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' then
     wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
   elseif self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'spellblade' or self.character == 'jester' or self.character == 'assassin' or self.character == 'beastmaster' or
-         self.character == 'thief' or self.character == 'vampire' then
+         self.character == 'thief' then
     _G[random:table{'scout1', 'scout2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.35}
     if self.character == 'spellblade' then
       wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
@@ -2093,8 +2075,6 @@ function Projectile:init(args)
   self.ricochet = args.ricochet or 0
   self.chain_enemies_hit = {}
   self.infused_enemies_hit = {}
-  self.heals_on_hit = args.heals_on_hit or false
-  self.vampire_buff_on_hit = args.vampire_buff_on_hit or false
 
   if self.character == 'sage' then
     elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
@@ -2165,7 +2145,7 @@ function Projectile:init(args)
         self.hfx:use('hit', 0.5)
         local r = self:angle_to_object(enemy)
         local t = {group = main.current.main, x = self.x + 8*math.cos(r), y = self.y + 8*math.sin(r), v = 250, r = r, color = self.parent.color, dmg = self.parent.dmg, pierce = 2, character = 'arcanist_projectile',
-        parent = self.parent, level = self.parent.level}
+                   parent = self.parent, level = self.parent.level}
         local check_circle = Circle(t.x, t.y, 2)
         local objects = main.current.main:get_objects_in_shape(check_circle, {Player, Seeker, EnemyCritter, Critter, Sentry, Volcano, Saboteur, Bomb, Pet, Turret, Automaton})
         if #objects == 0 then Projectile(table.merge(t, mods or {})) end
@@ -2179,6 +2159,12 @@ function Projectile:init(args)
     self.homing = true
     if self.level == 3 then
       self.pierce = 2
+    end
+  else
+    for _, class in pairs(EXTRA_UNITS) do
+      if (class.projectile_init) then
+        class:projectile_init(self, args)
+      end
     end
   end
 
@@ -2354,7 +2340,7 @@ function Projectile:on_collision_enter(other, contact)
       end
       _G[random:table{'arrow_hit_wall1', 'arrow_hit_wall2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.2}
     elseif self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'spellblade' or self.character == 'jester' or self.character == 'beastmaster' or self.character == 'witch' or
-           self.character == 'thief'or self.character == 'vampire' then
+           self.character == 'thief' or self.is_a_knife then
       self:die(x, y, r, 0)
       knife_hit_wall1:play{pitch = random:float(0.9, 1.1), volume = 0.2}
       local r = Unit.bounce(self, nx, ny)
@@ -2430,7 +2416,7 @@ function Projectile:on_trigger_enter(other, contact)
 
     if self.character == 'archer' or self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'hunter' or self.character == 'spellblade' or self.character == 'engineer' or
     self.character == 'jester' or self.character == 'assassin' or self.character == 'barrager' or self.character == 'beastmaster' or self.character == 'witch' or self.character == 'miner' or self.character == 'thief' or 
-    self.character == 'psyker' or self.character == 'sentry' or self.character == 'vampire' then
+    self.character == 'psyker' or self.character == 'sentry' or self.is_a_knife then
       hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
       if self.character == 'spellblade' or self.character == 'psyker' then
         magic_area1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
@@ -2542,30 +2528,10 @@ function Projectile:on_trigger_enter(other, contact)
       end
     end
 
-    if self.heals_on_hit then
-      local check_circle = Circle(random:float(main.current.x1 + 16, main.current.x2 - 16), random:float(main.current.y1 + 16, main.current.y2 - 16), 2)
-      local objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
-      while #objects > 0 do
-        check_circle:move_to(random:float(main.current.x1 + 16, main.current.x2 - 16), random:float(main.current.y1 + 16, main.current.y2 - 16))
-        objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+    for _, class in pairs(EXTRA_UNITS) do
+      if (class.projectile_hit_enemy) then
+        class:projectile_hit_enemy(self)
       end
-      SpawnEffect{group = main.current.effects, x = check_circle.x, y = check_circle.y, color = green[0], action = function(x, y)
-        local check_circle = Circle(x, y, 2)
-        local objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
-        if #objects == 0 then
-          HealingOrb{group = main.current.main, x = x, y = y}
-        end
-      end}
-    end
-
-    if self.parent and self.vampire_buff_on_hit then
-      local units = self.parent:get_all_units()
-      for _, unit in ipairs(units) do
-        unit.vampire_dmg_m = unit.vampire_dmg_m + 0.2
-        unit.vampired = true
-        unit.t:after(2, function() unit.vampired = false end)
-      end
-      buff1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
     end
   end
 end
