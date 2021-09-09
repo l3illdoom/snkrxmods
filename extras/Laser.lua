@@ -50,6 +50,8 @@ function Laser:init_player(player)
     player.max_laser_range = callOrDefault(self.max_laser_range, 200)
     player.laser_acquire_frequency = callOrDefault(self.laser_acquire_frequency, 4)
     player.laser_color = self.laser_color(player)
+    player.max_laser_lock = callOrDefault(self.max_laser_lock, player.laser_acquire_frequency * 1.25)
+    player.laser_requires_los = self.laser_requires_los or false
 
     player.attack_sensor = Circle(player.x, player.y, player.laser_acquire_range)
     local enemiesInRange = function()
@@ -64,22 +66,37 @@ function Laser:init_player(player)
         function()
             local enemies = enemiesInRange()
             local add = math.min(player.max_targets - #player.laser_targets, #enemies, player.max_targets_add)
-            print('acquiring targets: ' .. #enemies .. ' possible enemies. adding: ' .. add)
             for _ = 1, add do
                 local acquired = self:selectTarget(player, enemies)
                 self:target_acquired(player, acquired)
                 table.insert(player.laser_targets, acquired)
+                if (player.max_laser_lock > 0) then
+                    player.t:after(player.max_laser_lock, function()
+                        table.delete(player.laser_targets, acquired)
+                        self:lost_target(player, acquired)
+                    end, 'laser_lock_' .. acquired.id)
+                end
             end
         end, nil, nil, 'attack'
     )
-    player.t:every(0.25, function()
+    player.t:every(player.laser_requires_los and 0.15 or 0.25, function()
         for _, acquired in ipairs(player.laser_targets) do
-            if acquired.dead or math.distance(player.x, player.y, acquired.x, acquired.y) > player.max_laser_range then
+            if acquired.dead
+                or math.distance(player.x, player.y, acquired.x, acquired.y) > player.max_laser_range
+                or (player.laser_requires_los and self:laserLosBlocked(player, acquired))
+            then
                 table.delete(player.laser_targets, acquired)
                 self:lost_target(player, acquired)
+                player.t:cancel('laser_lock_'..acquired.id)
             end
         end
     end, nil, nil, nil)
+end
+
+function Laser:laserLosBlocked(player, target)
+    local line = Line(player.x, player.y, target.x, target.y)
+    local colliding = main.current.main:get_objects_in_shape(line, {Seeker, EnemyCritter}, {target})
+    return #colliding > 0
 end
 
 function Laser:draw2(unit)
@@ -97,6 +114,23 @@ function Laser:lost_target(unit, target)
 end
 
 function Laser:selectTarget(unit, enemiesInRange)
+    return random:table_remove(enemiesInRange)
+end
+
+function Laser:selectClosestTarget(unit, enemiesInRange)
+    local closest = nil
+    local closestDis = nil
+    for _, enemy in ipairs(enemiesInRange) do
+        local dis = math.distance(enemy.x, enemy.y, unit.x, unit.y)
+        if closest == nil or dis < closestDis then
+            closest = enemy
+            closestDis = dis
+        end
+    end
+    if closest then
+        table.delete(enemiesInRange, closest)
+        return closest
+    end
     return random:table_remove(enemiesInRange)
 end
 

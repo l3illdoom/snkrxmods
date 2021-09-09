@@ -212,3 +212,5 @@ function Monument:draw()
     for i = 1, 4 do graphics.arc('open', self.x, self.y, self.heal_sensor.rs, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
     graphics.pop()
 end
+
+MonumentBuilder{}

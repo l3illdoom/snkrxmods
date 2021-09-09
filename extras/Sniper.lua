@@ -8,16 +8,17 @@ function Sniper:init()
         classes = {'ranger', 'rogue', 'laser'},
         color = function() return green[0] end,
         color_string = 'green',
-        effect_name = '[wavy_mid, red]BOOM[red] Headshot!',
+        effect_name = '[red]BOOM[fg] Headshot!',
         tier = 3,
         has_cooldown = true,
         attacks = true,
         launches_projectiles = true,
         max_targets = 1,
-        laser_acquire_range = 250,
+        laser_acquire_range = 200,
         laser_acquire_frequency = 2,
-        max_laser_range = 300,
-        laser_color = function() return red_transparent end
+        max_laser_range = 275,
+        max_laser_lock = 0, -- he doesn't lose aim due to timeout
+        laser_color = function() return red_transparent_weak end
     })
 end
 
@@ -63,3 +64,5 @@ function Sniper:selectTarget(unit, enemiesInRange)
 
     return self.super:selectTarget(unit, enemiesInRange)
 end
+
+Sniper{}

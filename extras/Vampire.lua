@@ -81,3 +81,5 @@ function Vampire:draw(unit)
         graphics.rectangle(unit.x, unit.y, 1.33*unit.shape.w, 1.33*unit.shape.h, 3, 3, red_transparent)
     end
 end
+
+Vampire{}

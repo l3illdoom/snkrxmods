@@ -260,15 +260,10 @@ function extraUnitsUpdate(unit, dt)
     end
 end
 
--- init each new unit and class you want included
+-- require each unit you want included
 require 'extras/MonumentBuilder'
-MonumentBuilder{}
-
 require 'extras/Vampire'
-Vampire{}
 
 require 'extras/DotLaser'
-DotLaser{}
-
 require 'extras/Sniper'
-Sniper{}
+require 'extras/RimeSeer'
