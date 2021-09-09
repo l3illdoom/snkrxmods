@@ -2742,9 +2742,7 @@ function DotArea:init(args)
         frost1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
       end
       for _, enemy in ipairs(enemies) do
-        if self.level == 3 then
-          enemy:slow(0.4, 4)
-        end
+        enemy:slow(self.level == 3 and 0.4 or 0.75)
         enemy:hit((self.dot_dmg_m or 1)*2*self.dmg, self, true)
         HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
         for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end

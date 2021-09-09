@@ -21,6 +21,24 @@ CLASS_COLOR_STRINGS = {
     ['explorer'] = 'fg',
 }
 
+ALL_CLASSES = {
+    'ranger',
+    'warrior',
+    'healer',
+    'mage',
+    'nuker',
+    'conjurer',
+    'rogue',
+    'enchanter',
+    'psyker',
+    'curser',
+    'forcer',
+    'swarmer',
+    'voider',
+    'sorcerer',
+    'mercenary'
+}
+
 ExtraUnit = Object:extend()
 function ExtraUnit:init_unit(args)
     for k, v in pairs(args or {}) do self[k] = v end
@@ -72,27 +90,10 @@ function extraUnitsDraw(unit)
 end
 
 function init_unit_pools(class_pool)
-    local all_classes = {
-        'ranger',
-        'warrior',
-        'healer',
-        'mage',
-        'nuker',
-        'conjurer',
-        'rogue',
-        'enchanter',
-        'psyker',
-        'curser',
-        'forcer',
-        'swarmer',
-        'voider',
-        'sorcerer',
-        'mercenary'
-    }
     if (class_pool) then
         run_class_pool = class_pool
     else
-        local available_classes = table.shallow_copy(all_classes)
+        local available_classes = table.shallow_copy(ALL_CLASSES)
         while #available_classes > MAX_CLASSES_PER_RUN do
             random:table_remove(available_classes)
         end
@@ -101,7 +102,7 @@ function init_unit_pools(class_pool)
     end
 
     local missing_classes = {}
-    for _, v in ipairs(all_classes) do
+    for _, v in ipairs(ALL_CLASSES) do
         if not table.contains(run_class_pool, v) then
             table.insert(missing_classes, v)
         end
