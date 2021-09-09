@@ -1,3 +1,5 @@
+-- inspired by a suggestion by JokerDoom#8890
+
 LaserClass = Object:extend()
 LaserClass:implement(ExtraClass)
 
@@ -24,6 +26,7 @@ function LaserClass:init(args)
     self.laser_acquire_range = BuffGroup{}
     self.max_laser_range = BuffGroup{}
     self.laser_acquire_frequency = BuffGroup{}
+    self.laser_damage = BuffGroup{}
 end
 
 function LaserClass:description(lvl)
@@ -70,6 +73,7 @@ function Laser:init_player(player)
     player.laser_color = self.laser_color(player)
     player.max_laser_lock = callOrDefault('max_laser_lock', player.laser_acquire_frequency * 1.25)
     player.laser_requires_los = self.laser_requires_los or false
+    player.laser_thickness = self.laser_thickness or 2
 
     player.attack_sensor = Circle(player.x, player.y, player.laser_acquire_range)
     local enemiesInRange = function()
@@ -129,9 +133,13 @@ end
 function Laser:draw2(unit)
     if (unit.laser_targets and #unit.laser_targets > 0) then
         for _, target in ipairs(unit.laser_targets) do
-            graphics.line(unit.x, unit.y, target.x, target.y, unit.laser_color, 2)
+            self:draw_laser(unit, target)
         end
     end
+end
+
+function Laser:draw_laser(unit, target)
+    graphics.line(unit.x, unit.y, target.x, target.y, unit.laser_color, unit.laser_thickness)
 end
 
 function Laser:target_acquired(unit, target)
@@ -176,4 +184,6 @@ end
 
 LASER_CLASS = LaserClass{}
 
+-- class passives
 require 'extras/laser/Telescope'
+require 'extras/laser/MagnifyingGlass'

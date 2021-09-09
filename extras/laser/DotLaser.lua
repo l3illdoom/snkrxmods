@@ -44,7 +44,8 @@ function DotLaser:target_acquired(unit, target)
         if not target or not target.apply_dot or target.dead then
             unit.t:cancel(tag)
         end
-        local dmg = stage * unit.dmg * (unit.dot_dmg_m or 1) * (main.current.chronomancer_dot or 1)
+        local dmg = LASER_CLASS.laser_damage:getStat(stage * unit.dmg)
+                * (unit.dot_dmg_m or 1) * (main.current.chronomancer_dot or 1)
         target:apply_dot(
                 dmg,
                 10000,

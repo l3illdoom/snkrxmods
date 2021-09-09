@@ -11,7 +11,7 @@ function Telescope:init()
 end
 
 function Telescope:description(lvl)
-    return '+' .. self:desc(lvl, self.bonuses) .. '% max laser lock range'
+    return '+' .. self:desc(lvl, self.bonuses) .. '% laser lock and tracking range'
 end
 
 function Telescope:onArenaEnter(args)
@@ -23,6 +23,7 @@ function Telescope:onArenaEnter(args)
         print('Telescope: found me, buff=' .. buff)
     end
     LASER_CLASS.max_laser_range:setMod(self.key, buff)
+    LASER_CLASS.laser_acquire_range:setMod(self.key, buff)
 end
 
 

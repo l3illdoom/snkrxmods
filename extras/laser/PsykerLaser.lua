@@ -74,8 +74,10 @@ function OrbLaser:init()
 end
 
 function OrbLaser:target_acquired(unit, target)
+    local dmg = LASER_CLASS.laser_damage:getStat(Projectile.add_psyker_laser.dmg)
+            * (Projectile.add_psyker_laser.dot_dmg_m or 1) * (main.current.chronomancer_dot or 1)
     target:apply_dot(
-            Projectile.add_psyker_laser.dmg * (Projectile.add_psyker_laser.dot_dmg_m or 1) * (main.current.chronomancer_dot or 1),
+            dmg,
             10000,
             fg_transparent_weak,
             'orb_laser_' .. unit.id

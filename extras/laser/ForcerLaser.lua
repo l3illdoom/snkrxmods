@@ -41,7 +41,8 @@ end
 function ForcerLaser:target_acquired(unit, target)
     local interval = 0.25
     unit.t:every_immediate(interval, function()
-        local dmg = interval * unit.dmg * (unit.dot_dmg_m or 1) * (main.current.chronomancer_dot or 1)
+        local dmg = LASER_CLASS.laser_damage:getStat(interval * unit.dmg)
+                * (unit.dot_dmg_m or 1) * (main.current.chronomancer_dot or 1)
         target:hit(dmg, nil, nil, false)
         target:push(interval * 40 * (unit.knockback_m or 1), target:angle_to_object(unit) + math.pi)
     end, nil, nil, self:getTagFor(target))

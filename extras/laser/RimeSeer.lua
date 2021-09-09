@@ -17,7 +17,8 @@ function RimeSeer:init()
         laser_acquire_range = 110,
         laser_acquire_frequency = 3.5,
         max_laser_range = 150,
-        laser_color = function() return blue2_transparent_weak end
+        laser_color = function() return blue2_transparent_weak end,
+        laser_thickness = 1.3
     })
 end
 
@@ -33,8 +34,10 @@ end
 
 
 function RimeSeer:target_acquired(unit, target)
+    local dmg = LASER_CLASS.laser_damage:getStat(unit.dmg)
+            * (unit.dot_dmg_m or 1) * (main.current.chronomancer_dot or 1)
     target:apply_dot(
-        unit.dmg * (unit.dot_dmg_m or 1) * (main.current.chronomancer_dot or 1),
+        dmg,
         10000,
         blue2_transparent_weak,
         'rime_seer'

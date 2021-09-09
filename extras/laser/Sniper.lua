@@ -18,7 +18,8 @@ function Sniper:init()
         laser_acquire_frequency = 2,
         max_laser_range = 275,
         max_laser_lock = 0, -- he doesn't lose aim due to timeout
-        laser_color = function() return red_transparent_weak end
+        laser_color = function() return red_transparent_weak end,
+        laser_thickness = 1.3
     })
 end
 

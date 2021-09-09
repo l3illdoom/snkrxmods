@@ -1,4 +1,4 @@
-
+-- inspired by a suggestion from Conq#1738 in discord
 MonumentBuilder = Object:extend()
 MonumentBuilder:implement(ExtraUnit)
 function MonumentBuilder:init(args)
