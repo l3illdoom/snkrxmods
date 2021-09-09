@@ -1075,7 +1075,7 @@ function init()
     character_color_strings[k] = unit.color_string
     character_classes[k] = unit.classes
     character_class_strings[k] = unit:get_class_string()
-    character_descriptions[k] = unit.get_description
+    character_descriptions[k] = function(lvl) return unit:get_description(lvl) end
     character_effect_names[k] = unit.effect_name
     character_effect_names_gray[k] = unit.effect_name_gray
     character_effect_descriptions[k] = unit.get_effect_description
@@ -1099,7 +1099,7 @@ function init()
   get_number_of_units_per_class = function(units)
     local counts  = {}
 
-    for _, k in pairs(ALL_CLASSES) do
+    for _, k in ipairs(ALL_CLASSES) do
       counts[k] = 0
     end
 
@@ -1115,7 +1115,7 @@ function init()
     local units_per_class = get_number_of_units_per_class(units)
     local class_levels = {}
 
-    for amount, class in ipairs(units_per_class) do
+    for class, amount in pairs(units_per_class) do
       class_levels[class] = 0
       for i, v in ipairs(UNITS_PER_CLASS_LEVEL[class]) do
         if amount >= v then

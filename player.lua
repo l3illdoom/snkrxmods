@@ -1227,7 +1227,7 @@ end
 function Player:update(dt)
   self:update_game_object(dt)
 
-  extraUnitsUpdate(unit, dt)
+  extraUnitsUpdate(self, dt)
 
   if self.character == 'squire' then
     local all_units = self:get_all_units()
@@ -1867,7 +1867,7 @@ function Player:shoot(r, mods)
   camera:spring_shake(2, r)
   self.hfx:use('shoot', 0.25)
 
-  local dmg_m = 1
+  local dmg_m = mods.dmg_m or 1
   local crit = false
   if self.character == 'beastmaster' then crit = random:bool(10) end
   if self.chance_to_crit and random:bool(self.chance_to_crit) then dmg_m = ((self.assassination == 1 and 8) or (self.assassination == 2 and 10) or (self.assassination == 3 and 12) or 4); crit = true end
@@ -1950,7 +1950,7 @@ function Player:shoot(r, mods)
     end
   elseif not extraUnitsShoot(self, crit, dmg_m, r, mods) then
     HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-    local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
+    local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = mods.v or 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
     parent = self, level = self.level}
     Projectile(table.merge(t, mods or {}))
   end
@@ -2309,7 +2309,7 @@ function Projectile:on_collision_enter(other, contact)
   else r = 0 end
 
   if other:is(Wall) then
-    if self.character == 'archer' or self.character == 'hunter' or self.character == 'barrage' or self.character == 'barrager' or self.character == 'sentry' then
+    if self.character == 'archer' or self.character == 'hunter' or self.character == 'barrage' or self.character == 'barrager' or self.character == 'sentry' or self.is_an_arrow then
       if self.ricochet <= 0 then
         self:die(x, y, r, 0)
         WallArrow{group = main.current.main, x = x, y = y, r = self.r, color = self.color}
@@ -2396,7 +2396,7 @@ function Projectile:on_trigger_enter(other, contact)
 
     if self.character == 'archer' or self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'hunter' or self.character == 'spellblade' or self.character == 'engineer' or
     self.character == 'jester' or self.character == 'assassin' or self.character == 'barrager' or self.character == 'beastmaster' or self.character == 'witch' or self.character == 'miner' or self.character == 'thief' or 
-    self.character == 'psyker' or self.character == 'sentry' or self.is_a_knife then
+    self.character == 'psyker' or self.character == 'sentry' or self.is_a_knife or self.is_an_arrow then
       hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
       if self.character == 'spellblade' or self.character == 'psyker' then
         magic_area1:play{pitch = random:float(0.95, 1.05), volume = 0.15}

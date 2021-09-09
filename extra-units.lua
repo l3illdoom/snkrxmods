@@ -248,14 +248,14 @@ function extraUnitsShoot(unit, crit, dmg_m, r, mods)
 end
 
 function extraUnitsUpdate(unit, dt)
-    for _, class in EXTRA_CLASSES do
+    for _, class in pairs(EXTRA_CLASSES) do
         if class.update then
             class:update(unit, dt)
         end
     end
-    for _, extraUnit in EXTRA_UNITS do
+    for _, extraUnit in pairs(EXTRA_UNITS) do
         if (extraUnit.update) then
-            extraUnit.update(unit, dt)
+            extraUnit:update(unit, dt)
         end
     end
 end
@@ -267,8 +267,8 @@ MonumentBuilder{}
 require 'extras/Vampire'
 Vampire{}
 
-require 'extras/Laser'
-LaserClass{}
-
 require 'extras/DotLaser'
 DotLaser{}
+
+require 'extras/Sniper'
+Sniper{}

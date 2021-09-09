@@ -8,13 +8,13 @@ function LaserClass:init(args)
         color_string = 'fg',
         levels = {2, 4},
         stats = {
-            hp = 1,
+            hp = 1.1,
             dmg = 1.2,
             aspd = 1.1,
             area_dmg = 1,
             area_size = 1,
             def = 0.85,
-            mvspd = 1.2
+            mvspd = 1.0
         },
     })
     laser = Image('laser')
@@ -66,11 +66,11 @@ function Laser:init_player(player)
             local add = math.min(player.max_targets - #player.laser_targets, #enemies, player.max_targets_add)
             print('acquiring targets: ' .. #enemies .. ' possible enemies. adding: ' .. add)
             for _ = 1, add do
-                local acquired = random:table_remove(enemies)
+                local acquired = self:selectTarget(player, enemies)
                 self:target_acquired(player, acquired)
                 table.insert(player.laser_targets, acquired)
             end
-        end, nil, nil, 'shoot'
+        end, nil, nil, 'attack'
     )
     player.t:every(0.25, function()
         for _, acquired in ipairs(player.laser_targets) do
@@ -91,9 +91,24 @@ function Laser:draw2(unit)
 end
 
 function Laser:target_acquired(unit, target)
-
 end
 
 function Laser:lost_target(unit, target)
-
 end
+
+function Laser:selectTarget(unit, enemiesInRange)
+    return random:table_remove(enemiesInRange)
+end
+
+function LaserClass:update(unit, dt)
+    if not unit.laser_count_check then
+        unit.laser_count_check = true
+        if table.contains(unit.classes, self.key) then
+            local lvl = main.current.laser_level
+            unit.max_targets = unit.max_targets + (lvl == 2 and 2 or lvl == 1 and 1 or 0)
+            unit.max_targets_add = unit.max_targets_add + (lvl == 2 and 1 or 0)
+        end
+    end
+end
+
+LaserClass{}
