@@ -361,8 +361,8 @@ function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call, level)
   local shop_level = shop_level or 1
   local tier_weights = level_to_shop_odds[shop_level]
   repeat 
-    --unit_1 = level == 2 and 'monument_builder' or random:table(run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-    unit_1 = random:table(run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+    unit_1 = level == 1 and 'dot_laser' or random:table(run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+    --unit_1 = random:table(run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     unit_2 = random:table(run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     unit_3 = random:table(run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     all_units = {unit_1, unit_2, unit_3}

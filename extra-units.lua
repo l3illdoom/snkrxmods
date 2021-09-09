@@ -1,4 +1,5 @@
 EXTRA_UNITS = { } -- map created during init_unit
+EXTRA_CLASSES = {} -- map created during init_class
 
 MAX_CLASSES_PER_RUN = 11 -- set this to how many classes you want (ignoring explorer, that's always added).
 
@@ -36,8 +37,45 @@ ALL_CLASSES = {
     'swarmer',
     'voider',
     'sorcerer',
-    'mercenary'
+    'mercenary',
+    'explorer'
 }
+
+UNITS_PER_CLASS_LEVEL = {
+    ['ranger'] = {3, 6},
+    ['warrior'] = {3, 6},
+    ['healer'] = {2, 4},
+    ['mage'] = {3, 6},
+    ['nuker'] = {3, 6},
+    ['conjurer'] = {2, 4},
+    ['rogue'] = {3, 6},
+    ['enchanter'] = {2, 4},
+    ['psyker'] = {2, 4},
+    ['curser'] = {2, 4},
+    ['forcer'] = {2, 4},
+    ['swarmer'] = {2, 4},
+    ['voider'] = {2, 4},
+    ['sorcerer'] = {2, 4, 6},
+    ['mercenary'] = {2, 4},
+    ['explorer'] = {1}
+}
+
+ExtraClass = Object:extend()
+function ExtraClass:init_class(args)
+    for k, v in pairs(args or {}) do self[k] = v end
+    --[[
+        expects the following:
+        key: name of the unit, all lowercase, with underscores instead of spaces
+        color: a color object
+        color_string: a color in string form
+        levels: a table of how many units you need for each level
+
+    --]]
+
+    EXTRA_CLASSES[self.key] = self
+    table.insert(ALL_CLASSES, self.key)
+    UNITS_PER_CLASS_LEVEL[self.key] = self.levels
+end
 
 ExtraUnit = Object:extend()
 function ExtraUnit:init_unit(args)
@@ -89,11 +127,20 @@ function extraUnitsDraw(unit)
     end
 end
 
+function extraUnitsDraw2(unit)
+    for k, v in pairs(EXTRA_UNITS) do
+        if (v.draw2) then
+            v:draw2(unit)
+        end
+    end
+end
+
 function init_unit_pools(class_pool)
     if (class_pool) then
         run_class_pool = class_pool
     else
         local available_classes = table.shallow_copy(ALL_CLASSES)
+        table.remove(available_classes, 'explorer')
         while #available_classes > MAX_CLASSES_PER_RUN do
             random:table_remove(available_classes)
         end
@@ -197,3 +244,6 @@ MonumentBuilder{}
 
 require 'extras/Vampire'
 Vampire{}
+
+require 'extras/DotLaser'
+DotLaser{}

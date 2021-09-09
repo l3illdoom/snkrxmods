@@ -1097,85 +1097,30 @@ function init()
   end
 
   get_number_of_units_per_class = function(units)
-    local rangers = 0
-    local warriors = 0
-    local healers = 0
-    local mages = 0
-    local nukers = 0
-    local conjurers = 0
-    local rogues = 0
-    local enchanters = 0
-    local psykers = 0
-    local cursers = 0
-    local forcers = 0
-    local swarmers = 0
-    local voiders = 0
-    local sorcerers = 0
-    local mercenaries = 0
-    local explorers = 0
+    local counts  = {}
+
     for _, unit in ipairs(units) do
       for _, unit_class in ipairs(character_classes[unit.character]) do
-        if unit_class == 'ranger' then rangers = rangers + 1 end
-        if unit_class == 'warrior' then warriors = warriors + 1 end
-        if unit_class == 'healer' then healers = healers + 1 end
-        if unit_class == 'mage' then mages = mages + 1 end
-        if unit_class == 'nuker' then nukers = nukers + 1 end
-        if unit_class == 'conjurer' then conjurers = conjurers + 1 end
-        if unit_class == 'rogue' then rogues = rogues + 1 end
-        if unit_class == 'enchanter' then enchanters = enchanters + 1 end
-        if unit_class == 'psyker' then psykers = psykers + 1 end
-        if unit_class == 'curser' then cursers = cursers + 1 end
-        if unit_class == 'forcer' then forcers = forcers + 1 end
-        if unit_class == 'swarmer' then swarmers = swarmers + 1 end
-        if unit_class == 'voider' then voiders = voiders + 1 end
-        if unit_class == 'sorcerer' then sorcerers = sorcerers + 1 end
-        if unit_class == 'mercenary' then mercenaries = mercenaries + 1 end
-        if unit_class == 'explorer' then explorers = explorers + 1 end
+        counts[unit_class] = (counts[unit_class] or 0) + 1
       end
     end
-    return {ranger = rangers, warrior = warriors, healer = healers, mage = mages, nuker = nukers, conjurer = conjurers, rogue = rogues,
-      enchanter = enchanters, psyker = psykers, curser = cursers, forcer = forcers, swarmer = swarmers, voider = voiders, sorcerer = sorcerers, mercenary = mercenaries, explorer = explorers}
+    return counts
   end
 
   get_class_levels = function(units)
     local units_per_class = get_number_of_units_per_class(units)
-    local units_to_class_level = function(number_of_units, class)
-      if class == 'ranger' or class == 'warrior' or class == 'mage' or class == 'nuker' or class == 'rogue' then
-        if number_of_units >= 6 then return 2
-        elseif number_of_units >= 3 then return 1
-        else return 0 end
-      elseif class == 'healer' or class == 'conjurer' or class == 'enchanter' or class == 'curser' or class == 'forcer' or class == 'swarmer' or class == 'voider' or class == 'mercenary' or class == 'psyker' then
-        if number_of_units >= 4 then return 2
-        elseif number_of_units >= 2 then return 1
-        else return 0 end
-      elseif class == 'sorcerer' then
-        if number_of_units >= 6 then return 3
-        elseif number_of_units >= 4 then return 2
-        elseif number_of_units >= 2 then return 1
-        else return 0 end
-      elseif class == 'explorer' then
-        if number_of_units >= 1 then return 1
-        else return 0 end
+    local class_levels = {}
+
+    for amount, class in ipairs(units_per_class) do
+      class_levels[class] = 0
+      for i, v in ipairs(UNITS_PER_CLASS_LEVEL[class]) do
+        if amount >= v then
+          class_levels[class] = i
+        end
       end
     end
-    return {
-      ranger = units_to_class_level(units_per_class.ranger, 'ranger'),
-      warrior = units_to_class_level(units_per_class.warrior, 'warrior'),
-      mage = units_to_class_level(units_per_class.mage, 'mage'),
-      nuker = units_to_class_level(units_per_class.nuker, 'nuker'),
-      rogue = units_to_class_level(units_per_class.rogue, 'rogue'),
-      healer = units_to_class_level(units_per_class.healer, 'healer'),
-      conjurer = units_to_class_level(units_per_class.conjurer, 'conjurer'),
-      enchanter = units_to_class_level(units_per_class.enchanter, 'enchanter'),
-      psyker = units_to_class_level(units_per_class.psyker, 'psyker'),
-      curser = units_to_class_level(units_per_class.curser, 'curser'),
-      forcer = units_to_class_level(units_per_class.forcer, 'forcer'),
-      swarmer = units_to_class_level(units_per_class.swarmer, 'swarmer'),
-      voider = units_to_class_level(units_per_class.voider, 'voider'),
-      sorcerer = units_to_class_level(units_per_class.sorcerer, 'sorcerer'),
-      mercenary = units_to_class_level(units_per_class.mercenary, 'mercenary'),
-      explorer = units_to_class_level(units_per_class.explorer, 'explorer'),
-    }
+
+    return class_levels
   end
 
   get_classes = function(units)
@@ -1184,6 +1129,11 @@ function init()
       table.insert(classes, table.copy(character_classes[unit.character]))
     end
     return table.unify(table.flatten(classes))
+  end
+
+  class_set_numbers = {}
+  for i, k in ipairs(ALL_CLASSES) do
+    class_set_numbers[k] = function(units) return UNITS_PER_CLASS_LEVEL[1], UNITS_PER_CLASS_LEVEL[2], UNITS_PER_CLASS_LEVEL[3], get_number_of_units_per_class(units)[k] end
   end
 
   class_set_numbers = {

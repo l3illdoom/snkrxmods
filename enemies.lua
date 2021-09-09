@@ -785,16 +785,19 @@ function Seeker:curse(curse, duration, arg1, arg2, arg3)
 end
 
 
-function Seeker:apply_dot(dmg, duration, color)
+function Seeker:apply_dot(dmg, duration, color, tag)
   self.t:every(0.25, function()
     hit2:play{pitch = random:float(0.8, 1.2), volume = 0.2}
     self:hit(dmg/4, nil, true)
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = fg[0], duration = 0.1}
     for i = 1, 1 do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     for i = 1, 1 do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = color or purple[0]} end
-  end, math.floor(duration/0.2))
+  end, math.floor(duration/0.2), nil, tag)
 end
 
+function Seeker:remove_dot(tag)
+  self.t:cancel(tag)
+end
 
 ExploderMine = Object:extend()
 ExploderMine:implement(GameObject)

@@ -1550,6 +1550,7 @@ function Player:draw()
     extraUnitsDraw(self)
   end
   graphics.pop()
+  extraUnitsDraw2(self)
 end
 
 
