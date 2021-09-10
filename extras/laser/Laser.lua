@@ -126,8 +126,8 @@ function Laser:disableLaser(player)
     for _, target in ipairs(player.laser_targets or {}) do
         self:lost_target(player, target)
     end
-    player.laser_targets = nil
-    player.laser_anim_time = nil
+    player.laser_targets = {}
+    player.laser_anim_time = {}
 end
 
 function Laser:laserLosBlocked(player, target)
