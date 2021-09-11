@@ -3,7 +3,7 @@ MonumentBuilder = Object:extend()
 MonumentBuilder:implement(ExtraUnit)
 function MonumentBuilder:init(args)
     self:init_unit({
-        key = 'monument_builder',
+        key = 'sculptor',
         classes = {'conjurer', 'enchanter'},
         color = function() return purple[0] end,
         color_string = 'purple',
