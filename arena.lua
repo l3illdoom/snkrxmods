@@ -8,6 +8,8 @@ end
 
 
 function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp, lock)
+  extraUnitsOnArenaEnter(level, loop, units, passives, shop_level, shop_xp, lock)
+
   self.hfx:add('condition1', 1)
   self.hfx:add('condition2', 1)
   self.level = level or 1
@@ -263,21 +265,9 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   for _, f in ipairs(self.player.followers) do table.insert(units, f) end
 
   local class_levels = get_class_levels(units)
-  self.ranger_level = class_levels.ranger
-  self.warrior_level = class_levels.warrior
-  self.mage_level = class_levels.mage
-  self.rogue_level = class_levels.rogue
-  self.nuker_level = class_levels.nuker
-  self.curser_level = class_levels.curser
-  self.forcer_level = class_levels.forcer
-  self.swarmer_level = class_levels.swarmer
-  self.voider_level = class_levels.voider
-  self.enchanter_level = class_levels.enchanter
-  self.healer_level = class_levels.healer
-  self.psyker_level = class_levels.psyker
-  self.conjurer_level = class_levels.conjurer
-  self.sorcerer_level = class_levels.sorcerer
-  self.mercenary_level = class_levels.mercenary
+  for k, v in pairs(class_levels) do
+    self[k .. '_level'] = v
+  end
 
   self.t:every(0.375, function()
     local p = random:table(star_positions)
@@ -379,15 +369,8 @@ function Arena:update(dt)
         gold = 3
         passives = {}
         main_song_instance:stop()
-        run_passive_pool = {
-          'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
-          'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
-          'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
-          'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
-          'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
-          'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
-          'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
-        }
+        run_passive_pool = getFreshPassivePool()
+        init_unit_pools()
         max_units = math.clamp(7 + current_new_game_plus + self.loop, 7, 12)
         main:add(BuyScreen'buy_screen')
         locked_state = nil
@@ -690,7 +673,7 @@ function Arena:quit()
         for i, unit in ipairs(self.units) do
           CharacterPart{group = self.ui, x = 20, y = 40 + (i-1)*19, character = unit.character, level = unit.level, force_update = true, cant_click = true, parent = self}
           Text2{group = self.ui, x = 20 + 14 + pixul_font:get_text_width(unit.character)/2, y = 40 + (i-1)*19, force_update = true, lines = {
-            {text = '[' .. character_color_strings[unit.character] .. ']' .. unit.character, font = pixul_font, alignment = 'left'}
+            {text = '[' .. character_color_strings[unit.character] .. ']' .. unit.character:titleCase(), font = pixul_font, alignment = 'left'}
           }}
         end
         for i, passive in ipairs(self.passives) do
@@ -852,15 +835,8 @@ function Arena:die()
           gold = 3
           passives = {}
           main_song_instance:stop()
-          run_passive_pool = {
-            'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
-            'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
-            'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
-            'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
-            'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
-            'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
-            'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
-          }
+          run_passive_pool = getFreshPassivePool()
+          init_unit_pools()
           max_units = math.clamp(7 + current_new_game_plus, 7, 12)
           main:add(BuyScreen'buy_screen')
           system.save_run()
@@ -961,12 +937,12 @@ function Arena:gain_gold()
   local merchant
   for _, unit in ipairs(self.starting_units) do
     if unit.character == 'merchant' then
-      merchant = true
+      merchant = unit
       break
     end
   end
   self.gold_gained = random:int(level_to_gold_gained[self.level][1], level_to_gold_gained[self.level][2])
-  self.interest = math.min(math.floor(gold/5), 5) + math.min((merchant and math.floor(gold/10) or 0), 10)
+  self.interest = math.min(math.floor(gold/5), 5) + math.min((merchant and math.floor(gold/10) or 0), 5 * (merchant and merchant.level or 1))
   gold = gold + self.gold_gained + self.gold_picked_up + self.interest
 end
 
@@ -993,7 +969,7 @@ function Arena:transition()
     slow_amount = 1
     music_slow_amount = 1
     main:add(BuyScreen'buy_screen')
-    system.save_run(self.level+1, self.loop, gold, self.units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
+    system.save_run(self.level+1, self.loop, gold, self.units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state, run_class_pool)
     main:go_to('buy_screen', self.level+1, self.loop, self.units, self.passives, self.shop_level, self.shop_xp)
     t.t:after(0.1, function()
       t.text:set_text({

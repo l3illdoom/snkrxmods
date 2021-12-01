@@ -326,11 +326,11 @@ function table.select(t, f, ...)
 end
 
 
--- Returns true if any values in the table pass the test
+-- Returns the first value in the table that passes the test
 function table.any(t, f, ...)
   for i, v in ipairs(t) do
     if f(v, i, ...) then
-      return true
+      return v
     end
   end
 end

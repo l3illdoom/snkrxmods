@@ -1,3 +1,38 @@
+BuffGroup = Object:extend()
+function BuffGroup:init(args)
+  self.mods = {}
+  self.adds = {}
+end
+function BuffGroup:getMod()
+  local result = 1
+  for _, v in pairs(self.mods) do
+    result = result * v
+  end
+  return result
+end
+function BuffGroup:getAdd()
+  local result = 0
+  for _, v in pairs(self.adds) do
+    result = result + v
+  end
+  return result
+end
+function BuffGroup:setMod(tag, value)
+  self.mods[tag] = value
+end
+function BuffGroup:clearMod(tag)
+  self.mods[tag] = nil
+end
+function BuffGroup:setAdd(tag, value)
+  self.adds[tag] = value
+end
+function BuffGroup:clearAdd(tag)
+  self.adds[tag] = nil
+end
+function BuffGroup:getStat(original)
+  return (original + self:getAdd()) * self:getMod()
+end
+
 Player = Object:extend()
 Player:implement(GameObject)
 Player:implement(Physics)
@@ -13,6 +48,16 @@ function Player:init(args)
   self.visual_shape = 'rectangle'
   self.classes = character_classes[self.character]
   self.damage_dealt = 0
+  self.buffs = {
+    def = BuffGroup{},
+    aspd = BuffGroup{},
+    dmg = BuffGroup{},
+    def = BuffGroup{},
+    area_size = BuffGroup{},
+    area_dmg = BuffGroup{},
+    mvspd = BuffGroup{},
+    hp = BuffGroup{},
+  }
 
   if self.character == 'vagrant' then
     self.attack_sensor = Circle(self.x, self.y, 96)
@@ -184,6 +229,37 @@ function Player:init(args)
       end
       ]]--
     end, nil, nil, 'heal')
+
+  elseif self.character == 'miner' then
+    self.t:every(12, function()
+      local check_circle = Circle(random:float(main.current.x1 + 16, main.current.x2 - 16), random:float(main.current.y1 + 16, main.current.y2 - 16), 2)
+      local objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+      while #objects > 0 do
+        check_circle:move_to(random:float(main.current.x1 + 16, main.current.x2 - 16), random:float(main.current.y1 + 16, main.current.y2 - 16))
+        objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+      end
+      SpawnEffect{group = main.current.effects, x = check_circle.x, y = check_circle.y, color = yellow2[0], action = function(x, y)
+        local check_circle = Circle(x, y, 2)
+        local objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+        if #objects == 0 then
+          Gold{group = main.current.main, x = x, y = y}
+        end
+      end}
+      --[[
+      local all_units = self:get_all_units()
+      local unit_index = table.contains(all_units, function(v) return v.hp <= 0.5*v.max_hp end)
+      if unit_index then
+        local unit = all_units[unit_index]
+        self.last_heal_time = love.timer.getTime()
+        if self.level == 3 then
+          for _, unit in ipairs(all_units) do unit:heal(0.2*unit.max_hp*(self.heal_effect_m or 1)) end
+        else
+          unit:heal(0.2*unit.max_hp*(self.heal_effect_m or 1))
+        end
+        heal1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      end
+      ]]--
+    end, nil, nil, 'spawn')
 
   elseif self.character == 'arcanist' then
     self.sorcerer_count = 0
@@ -866,6 +942,13 @@ function Player:init(args)
         end
       end
     end, nil, nil, 'buff')
+  else
+    local extra_unit = EXTRA_UNITS[self.character]
+    if (extra_unit) then
+      extra_unit:init_player(self)
+    else
+      print('no extra unit found for ' .. self.character .. '!')
+    end
   end
 
   self:calculate_stats(true)
@@ -1147,6 +1230,8 @@ end
 function Player:update(dt)
   self:update_game_object(dt)
 
+  extraUnitsUpdate(self, dt)
+
   if self.character == 'squire' then
     local all_units = self:get_all_units()
     for _, unit in ipairs(all_units) do
@@ -1169,22 +1254,11 @@ function Player:update(dt)
   if self.character == 'vagrant' and self.level == 3 then
     local class_levels = get_class_levels(self:get_all_units())
     local number_of_active_sets = 0
-    if class_levels.ranger >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.warrior >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mage >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.rogue >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.healer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.conjurer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.enchanter >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.psyker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.nuker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.curser >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.forcer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.swarmer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.voider >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.sorcerer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mercenary >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.explorer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
+    for _, v in pairs(class_levels) do
+      if v >= 1 then
+        number_of_active_sets = number_of_active_sets + 1
+      end
+    end
     self.vagrant_dmg_m = 1 + 0.1*number_of_active_sets
     self.vagrant_aspd_m = 1 + 0.1*number_of_active_sets
   end
@@ -1225,7 +1299,7 @@ function Player:update(dt)
   if table.any(self.classes, function(v) return v == 'rogue' end) then
     if main.current.rogue_level == 2 then self.chance_to_crit = 30
     elseif main.current.rogue_level == 1 then self.chance_to_crit = 15
-    elseif main.current.rogue_level == 0 then self.chance_to_crit = 0 end
+    elseif main.current.rogue_level == 0 then self.chance_to_crit = 5 end
   end
 
   if main.current.enchanter_level == 2 then self.enchanter_dmg_m = 1.25
@@ -1235,22 +1309,10 @@ function Player:update(dt)
   if table.any(self.classes, function(v) return v == 'explorer' end) then
     local class_levels = get_class_levels(self:get_all_units())
     local number_of_active_sets = 0
-    if class_levels.ranger >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.warrior >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mage >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.rogue >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.healer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.conjurer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.enchanter >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.psyker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.nuker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.curser >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.forcer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.swarmer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.voider >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.sorcerer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mercenary >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.explorer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
+    for _, v in pairs(class_levels) do
+      if v >= 1 then number_of_active_sets = number_of_active_sets + 1 end
+    end
+
     self.explorer_dmg_m = 1 + 0.15*number_of_active_sets
     self.explorer_aspd_m = 1 + 0.15*number_of_active_sets
   end
@@ -1332,14 +1394,26 @@ function Player:update(dt)
     else self.haste_mvspd_m = 1 end
   end
 
-  self.buff_def_a = (self.warrior_def_a or 0)
-  self.buff_aspd_m = (self.chronomancer_aspd_m or 1)*(self.vagrant_aspd_m or 1)*(self.outlaw_aspd_m or 1)*(self.fairy_aspd_m or 1)*(self.psyker_aspd_m or 1)*(self.chronomancy_aspd_m or 1)*(self.awakening_aspd_m or 1)*(self.berserking_aspd_m or 1)*(self.reinforce_aspd_m or 1)*(self.squire_aspd_m or 1)*(self.speed_3_aspd_m or 1)*(self.last_stand_aspd_m or 1)*(self.enchanted_aspd_m or 1)*(self.explorer_aspd_m or 1)*(self.magician_aspd_m or 1)
-  self.buff_dmg_m = (self.squire_dmg_m or 1)*(self.vagrant_dmg_m or 1)*(self.enchanter_dmg_m or 1)*(self.swordsman_dmg_m or 1)*(self.flagellant_dmg_m or 1)*(self.psyker_dmg_m or 1)*(self.ballista_dmg_m or 1)*(self.awakening_dmg_m or 1)*(self.reinforce_dmg_m or 1)*(self.payback_dmg_m or 1)*(self.immolation_dmg_m or 1)*(self.damage_4_dmg_m or 1)*(self.offensive_stance_dmg_m or 1)*(self.last_stand_dmg_m or 1)*(self.dividends_dmg_m or 1)*(self.explorer_dmg_m or 1)
-  self.buff_def_m = (self.squire_def_m or 1)*(self.ouroboros_def_m or 1)*(self.unwavering_stance_def_m or 1)*(self.reinforce_def_m or 1)*(self.defensive_stance_def_m or 1)*(self.last_stand_def_m or 1)*(self.unrelenting_stance_def_m or 1)*(self.hardening_def_m or 1)
-  self.buff_area_size_m = (self.nuker_area_size_m or 1)*(self.magnify_area_size_m or 1)*(self.unleash_area_size_m or 1)*(self.last_stand_area_size_m or 1)
-  self.buff_area_dmg_m = (self.nuker_area_dmg_m or 1)*(self.amplify_area_dmg_m or 1)*(self.unleash_area_dmg_m or 1)*(self.last_stand_area_dmg_m or 1)
-  self.buff_mvspd_m = (self.wall_rider_mvspd_m or 1)*(self.centipede_mvspd_m or 1)*(self.squire_mvspd_m or 1)*(self.last_stand_mvspd_m or 1)*(self.haste_mvspd_m or 1)
-  self.buff_hp_m = (self.flagellant_hp_m or 1)
+  self.buff_def_a = self.buffs.def:getAdd() + (self.warrior_def_a or 0)
+  self.buff_def_m = self.buffs.def:getMod() * (self.squire_def_m or 1)*(self.ouroboros_def_m or 1)*(self.unwavering_stance_def_m or 1)*(self.reinforce_def_m or 1)*(self.defensive_stance_def_m or 1)*(self.last_stand_def_m or 1)*(self.unrelenting_stance_def_m or 1)*(self.hardening_def_m or 1)
+
+  self.buff_aspd_a = self.buffs.aspd:getAdd()
+  self.buff_aspd_m = self.buffs.aspd:getMod() * (self.chronomancer_aspd_m or 1)*(self.vagrant_aspd_m or 1)*(self.outlaw_aspd_m or 1)*(self.fairy_aspd_m or 1)*(self.psyker_aspd_m or 1)*(self.chronomancy_aspd_m or 1)*(self.awakening_aspd_m or 1)*(self.berserking_aspd_m or 1)*(self.reinforce_aspd_m or 1)*(self.squire_aspd_m or 1)*(self.speed_3_aspd_m or 1)*(self.last_stand_aspd_m or 1)*(self.enchanted_aspd_m or 1)*(self.explorer_aspd_m or 1)*(self.magician_aspd_m or 1)
+
+  self.buff_dmg_a = self.buffs.dmg:getAdd()
+  self.buff_dmg_m = self.buffs.dmg:getMod() * (self.squire_dmg_m or 1)*(self.vagrant_dmg_m or 1)*(self.enchanter_dmg_m or 1)*(self.swordsman_dmg_m or 1)*(self.flagellant_dmg_m or 1)*(self.psyker_dmg_m or 1)*(self.ballista_dmg_m or 1)*(self.awakening_dmg_m or 1)*(self.reinforce_dmg_m or 1)*(self.payback_dmg_m or 1)*(self.immolation_dmg_m or 1)*(self.damage_4_dmg_m or 1)*(self.offensive_stance_dmg_m or 1)*(self.last_stand_dmg_m or 1)*(self.dividends_dmg_m or 1)*(self.explorer_dmg_m or 1)
+
+  self.buff_area_size_a = self.buffs.area_size:getAdd()
+  self.buff_area_size_m = self.buffs.area_size:getMod() * (self.nuker_area_size_m or 1)*(self.magnify_area_size_m or 1)*(self.unleash_area_size_m or 1)*(self.last_stand_area_size_m or 1)
+
+  self.buff_area_dmg_a = self.buffs.area_dmg:getAdd()
+  self.buff_area_dmg_m = self.buffs.area_dmg:getMod() * (self.nuker_area_dmg_m or 1)*(self.amplify_area_dmg_m or 1)*(self.unleash_area_dmg_m or 1)*(self.last_stand_area_dmg_m or 1)
+
+  self.buff_mvspd_a = self.buffs.mvspd:getAdd()
+  self.buff_mvspd_m = self.buffs.mvspd:getMod() * (self.wall_rider_mvspd_m or 1)*(self.centipede_mvspd_m or 1)*(self.squire_mvspd_m or 1)*(self.last_stand_mvspd_m or 1)*(self.haste_mvspd_m or 1)
+
+  self.buff_hp_a = self.buffs.hp:getAdd()
+  self.buff_hp_m = self.buffs.hp:getMod() * (self.flagellant_hp_m or 1)
   self:calculate_stats()
 
   if self.attack_sensor then self.attack_sensor:move_to(self.x, self.y) end
@@ -1454,8 +1528,11 @@ function Player:draw()
     if self.fairyd then
       graphics.rectangle(self.x, self.y, 1.25*self.shape.w, 1.25*self.shape.h, 3, 3, blue_transparent)
     end
+
+    extraUnitsDraw(self)
   end
   graphics.pop()
+  extraUnitsDraw2(self)
 end
 
 
@@ -1793,7 +1870,7 @@ function Player:shoot(r, mods)
   camera:spring_shake(2, r)
   self.hfx:use('shoot', 0.25)
 
-  local dmg_m = 1
+  local dmg_m = mods.dmg_m or 1
   local crit = false
   if self.character == 'beastmaster' then crit = random:bool(10) end
   if self.chance_to_crit and random:bool(self.chance_to_crit) then dmg_m = ((self.assassination == 1 and 8) or (self.assassination == 2 and 10) or (self.assassination == 3 and 12) or 4); crit = true end
@@ -1874,9 +1951,9 @@ function Player:shoot(r, mods)
         end
       end, 20)
     end
-  else
+  elseif not extraUnitsShoot(self, crit, dmg_m, r, mods) then
     HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-    local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
+    local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = mods.v or 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
     parent = self, level = self.level}
     Projectile(table.merge(t, mods or {}))
   end
@@ -2051,7 +2128,7 @@ function Projectile:init(args)
         self.hfx:use('hit', 0.5)
         local r = self:angle_to_object(enemy)
         local t = {group = main.current.main, x = self.x + 8*math.cos(r), y = self.y + 8*math.sin(r), v = 250, r = r, color = self.parent.color, dmg = self.parent.dmg, pierce = 2, character = 'arcanist_projectile',
-        parent = self.parent, level = self.parent.level}
+                   parent = self.parent, level = self.parent.level}
         local check_circle = Circle(t.x, t.y, 2)
         local objects = main.current.main:get_objects_in_shape(check_circle, {Player, Seeker, EnemyCritter, Critter, Sentry, Volcano, Saboteur, Bomb, Pet, Turret, Automaton})
         if #objects == 0 then Projectile(table.merge(t, mods or {})) end
@@ -2065,6 +2142,12 @@ function Projectile:init(args)
     self.homing = true
     if self.level == 3 then
       self.pierce = 2
+    end
+  else
+    for _, class in pairs(EXTRA_UNITS) do
+      if (class.projectile_init) then
+        class:projectile_init(self, args)
+      end
     end
   end
 
@@ -2229,7 +2312,7 @@ function Projectile:on_collision_enter(other, contact)
   else r = 0 end
 
   if other:is(Wall) then
-    if self.character == 'archer' or self.character == 'hunter' or self.character == 'barrage' or self.character == 'barrager' or self.character == 'sentry' then
+    if self.character == 'archer' or self.character == 'hunter' or self.character == 'barrage' or self.character == 'barrager' or self.character == 'sentry' or self.is_an_arrow then
       if self.ricochet <= 0 then
         self:die(x, y, r, 0)
         WallArrow{group = main.current.main, x = x, y = y, r = self.r, color = self.color}
@@ -2240,7 +2323,7 @@ function Projectile:on_collision_enter(other, contact)
       end
       _G[random:table{'arrow_hit_wall1', 'arrow_hit_wall2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.2}
     elseif self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'spellblade' or self.character == 'jester' or self.character == 'beastmaster' or self.character == 'witch' or
-           self.character == 'thief' then
+           self.character == 'thief' or self.is_a_knife then
       self:die(x, y, r, 0)
       knife_hit_wall1:play{pitch = random:float(0.9, 1.1), volume = 0.2}
       local r = Unit.bounce(self, nx, ny)
@@ -2316,7 +2399,7 @@ function Projectile:on_trigger_enter(other, contact)
 
     if self.character == 'archer' or self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'hunter' or self.character == 'spellblade' or self.character == 'engineer' or
     self.character == 'jester' or self.character == 'assassin' or self.character == 'barrager' or self.character == 'beastmaster' or self.character == 'witch' or self.character == 'miner' or self.character == 'thief' or 
-    self.character == 'psyker' or self.character == 'sentry' then
+    self.character == 'psyker' or self.character == 'sentry' or self.is_a_knife or self.is_an_arrow then
       hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
       if self.character == 'spellblade' or self.character == 'psyker' then
         magic_area1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
@@ -2425,6 +2508,12 @@ function Projectile:on_trigger_enter(other, contact)
     if self.parent and self.parent.void_rift and table.any(self.parent.classes, function(v) return v == 'mage' or v == 'nuker' or v == 'voider' end) then
       if random:bool(20) then
         DotArea{group = main.current.effects, x = self.x, y = self.y, rs = self.parent.area_size_m*24, color = self.color, dmg = self.parent.area_dmg_m*self.dmg*(self.parent.dot_dmg_m or 1), void_rift = true, duration = 1}
+      end
+    end
+
+    for _, class in pairs(EXTRA_UNITS) do
+      if (class.projectile_hit_enemy) then
+        class:projectile_hit_enemy(self)
       end
     end
   end
@@ -2602,9 +2691,7 @@ function DotArea:init(args)
         frost1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
       end
       for _, enemy in ipairs(enemies) do
-        if self.level == 3 then
-          enemy:slow(0.4, 4)
-        end
+        enemy:slow(self.level == 3 and 0.4 or 0.75)
         enemy:hit((self.dot_dmg_m or 1)*2*self.dmg, self, true)
         HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
         for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
@@ -3198,7 +3285,7 @@ Turret:implement(GameObject)
 Turret:implement(Physics)
 function Turret:init(args)
   self:init_game_object(args)
-  self:set_as_rectangle(14, 6, 'static', 'player')
+  self:set_as_rectangle(9, 4, 'static', 'player')
   self:set_restitution(0.5)
   self.hfx:add('hit', 1)
   self.color = orange[0]

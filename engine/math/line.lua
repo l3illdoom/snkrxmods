@@ -7,7 +7,7 @@ function Line:init(x1, y1, x2, y2)
   self.x, self.y = (self.x1 + self.x2)/2, (self.y1 + self.y2)/2
   self.vertices = {x1, y1, x2, y2}
   self:get_size()
-  self:get_bounds()
+  --self:get_bounds() -- alters x1,x2,y1,y2 which breaks all lines that are not in quadrant 1
   self:get_centroid()
 end
 

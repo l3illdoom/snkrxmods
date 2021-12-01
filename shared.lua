@@ -876,3 +876,17 @@ end
 function WallCover:draw()
   self.shape:draw(self.color)
 end
+
+function string:gray()
+  result = (self:gsub("%[[^%]]+%]", ""))
+  return '[light_bg]' .. result
+end
+
+function string:titleCase()
+  local underscoreReplaced = (self:gsub("%_", " "))
+  return (underscoreReplaced:gsub("(%a)([%w_']*)",
+          function(first, rest)
+            return first:upper() .. rest
+          end
+  ))
+end

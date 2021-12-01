@@ -218,9 +218,9 @@ function Seeker:init(args)
   elseif self.shooter then
     self.color = fg[0]:clone()
     local n = math.remap(current_new_game_plus, 0, 5, 1, 0.5)
-    self.t:after({2*n, 4*n}, function()
+    self.t:after({n, 2*n}, function()
       self.shooting = true
-      self.t:every({4, 6}, function()
+      self.t:every({2, 4}, function()
         if self.silenced or self.barbarian_stunned then return end
         for i = 1, 3 do
           self.t:after(math.max(1 - self.level*0.01, 0.25)*0.15*(i-1), function()
@@ -228,8 +228,8 @@ function Seeker:init(args)
             self.hfx:use('hit', 0.25, 200, 10, 0.1)
             local r = self.r
             HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-            EnemyProjectile{group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), color = fg[0], r = r, v = math.min(140 + 3.5*self.level + 2*current_new_game_plus, 300),
-              dmg = (current_new_game_plus*0.05 + 1)*self.dmg, source = 'shooter'}
+            EnemyProjectile{group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), color = fg[0], r = r, v = math.min(110 + 3.5*self.level + 2*current_new_game_plus, 300),
+              dmg = (current_new_game_plus*0.03 + 1)*self.dmg, source = 'shooter'}
           end)
         end
       end, nil, nil, 'shooter')
@@ -287,7 +287,7 @@ function Seeker:update(dt)
   self.stun_dmg_m = (self.barbarian_stunned and 2 or 1)
 
   if self.shooter then
-    self.t:set_every_multiplier('shooter', (1 - math.min(self.level*0.02, 0.25)))
+    self.t:set_every_multiplier('shooter', (1 - math.min(self.level*0.015, 0.25)))
   end
 
   if self.being_pushed then
@@ -785,16 +785,19 @@ function Seeker:curse(curse, duration, arg1, arg2, arg3)
 end
 
 
-function Seeker:apply_dot(dmg, duration, color)
+function Seeker:apply_dot(dmg, duration, color, tag)
   self.t:every(0.25, function()
     hit2:play{pitch = random:float(0.8, 1.2), volume = 0.2}
     self:hit(dmg/4, nil, true)
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = fg[0], duration = 0.1}
     for i = 1, 1 do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     for i = 1, 1 do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = color or purple[0]} end
-  end, math.floor(duration/0.2))
+  end, math.floor(duration/0.2), nil, tag)
 end
 
+function Seeker:remove_dot(tag)
+  self.t:cancel(tag)
+end
 
 ExploderMine = Object:extend()
 ExploderMine:implement(GameObject)
@@ -818,7 +821,7 @@ function ExploderMine:init(args)
       local n = math.floor(8 + current_new_game_plus*1.5)
       if main.current.main.world then
         for i = 1, n do
-          EnemyProjectile{group = main.current.main, x = self.x, y = self.y, color = blue[0], r = (i-1)*math.pi/(n/2), v = 120 + math.min(5*self.parent.level, 300), dmg = 1.3*self.parent.dmg}
+          EnemyProjectile{group = main.current.main, x = self.x, y = self.y, color = blue[0], r = (i-1)*math.pi/(n/2), v = 120 + math.min(5*self.parent.level, 300), dmg = 1.3*self.parent.dmg, source = 'mine'}
         end
       end
       self.dead = true
@@ -1095,7 +1098,7 @@ function EnemyProjectile:on_trigger_enter(other, contact)
     end
 
   elseif other:is(Seeker) or other:is(EnemyCritter) then
-    if self.source == 'shooter' then
+    if self.source == 'shooter' or self.source == 'mine' then
       self:die(self.x, self.y, nil, random:int(2, 3))
       other:hit(0.5*self.dmg, nil, nil, true)
     end
